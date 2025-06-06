@@ -1,878 +1,57 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Climbing Training App</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="description" content="Klettertraining App für Übungen, Workouts und Trainingspläne">
-    <meta name="theme-color" content="#1f2937">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="ClimbTraining">
-    
-    <!-- Icons -->
-    <link rel="icon" type="image/x-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjZjk3MzE2Ii8+Cjwvc3ZnPgo=">
-    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSIjZjk3MzE2Ii8+Cjwvc3ZnPgo=">
-    
-    <!-- Web App Manifest -->
-    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkNsaW1iaW5nIFRyYWluaW5nIEFwcCIsCiAgInNob3J0X25hbWUiOiAiQ2xpbWJUcmFpbmluZyIsCiAgImRlc2NyaXB0aW9uIjogIktsbXR0ZXJ0cmFpbmluZyBBcHAgZsO8ciBCYnVuZ2VuLCBXb3Jrb3V0cyB1bmQgVHJhaW5pbmdzcGzDpG5lIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMxZjI5MzciLAogICJ0aGVtZV9jb2xvciI6ICIjMWYyOTM3IiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCM2FXUjBhRDBpTWpRaUlHaGxhV2RvZEQwaU1qUWlJSFpwWlhkQ2IzZzlJakFnTUNBeU5DQXlOQ0lnWm1sc2JEMGlibTl1WlNJZ2VHMXNibk05SW1oMGRIQTZMeTkzZDNjdWR6TXViM0puTHpJd01EQXZjM1puSWo0S1BIQmhkR2dnWkQwaVRURXlJRUpNTVRNdU1Ea2dPQzR5TmtzeU1DQTVUREV6TGpBNUlERTFMelEwVERFeUlESXlUREV3TGpreElERTFMelEwVERRZ09VeHhNQzQ1TVNBNExqSTJUREV5SURKS2VpSWdabWxzYkQwaUkyWTVOek14TmlJdlBnbzhMM04yWno0SyIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0KICBdCn0=">
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- React -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Lucide React Icons -->
-    <script src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.js"></script>
-    
-    <style>
-        /* Custom scrollbar styling */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #374151;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #6b7280;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #9ca3af;
-        }
-        
-        /* Prevent zoom on input focus (iOS) */
-        input[type="text"], input[type="number"], select, textarea {
-            font-size: 16px;
-        }
-        
-        /* PWA splash screen styling */
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            background-color: #1f2937;
-            color: white;
-            overflow-x: hidden;
-        }
-        
-        /* Loading screen */
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #1f2937;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        }
-        
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #374151;
-            border-top: 4px solid #f97316;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body>
-    <!-- Loading Screen -->
-    <div id="loading" class="loading-screen">
-        <div class="loading-spinner"></div>
-        <h2 style="color: #f97316; margin-top: 20px; font-weight: bold;">Climbing Training</h2>
-        <p style="color: #9ca3af; margin-top: 10px;">Lade App...</p>
-    </div>
-
-    <!-- App Container -->
-    <div id="root"></div>
-
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-        const { Plus, Play, Edit, Trash2, Clock, RotateCcw, ChevronLeft, ChevronRight, Check, X, Star, Menu, Home, Dumbbell, Calendar, BarChart3 } = lucideReact;
-
-        const ClimbingTrainingApp = () => {
-            // State Management
-            const [currentView, setCurrentView] = useState('home');
-            const [exercises, setExercises] = useState(() => {
-                const saved = localStorage.getItem('exercises');
-                return saved ? JSON.parse(saved) : [];
-            });
-            const [workouts, setWorkouts] = useState(() => {
-                const saved = localStorage.getItem('workouts');
-                return saved ? JSON.parse(saved) : [];
-            });
-            const [trainingPlans, setTrainingPlans] = useState(() => {
-                const saved = localStorage.getItem('trainingPlans');
-                return saved ? JSON.parse(saved) : [];
-            });
-            const [currentWorkout, setCurrentWorkout] = useState(null);
-            const [currentExercise, setCurrentExercise] = useState(null);
-            const [timer, setTimer] = useState(0);
-            const [isTimerRunning, setIsTimerRunning] = useState(false);
-            const [currentSet, setCurrentSet] = useState(1);
-            const [currentRep, setCurrentRep] = useState(0);
-            const [restTimer, setRestTimer] = useState(0);
-            const [isRestTimerRunning, setIsRestTimerRunning] = useState(false);
-            const [showRestTimer, setShowRestTimer] = useState(false);
-            const [stretchingExercises, setStretchingExercises] = useState([]);
-            const [currentStretching, setCurrentStretching] = useState(null);
-            const [workoutHistory, setWorkoutHistory] = useState(() => {
-                const saved = localStorage.getItem('workoutHistory');
-                return saved ? JSON.parse(saved) : [];
-            });
-            const [draggedExercise, setDraggedExercise] = useState(null);
-            const [currentPlan, setCurrentPlan] = useState(() => {
-                const saved = localStorage.getItem('currentPlan');
-                return saved ? JSON.parse(saved) : null;
-            });
-            const [replacementIndex, setReplacementIndex] = useState(null);
-
-            // Form states
-            const [exerciseForm, setExerciseForm] = useState({
-                name: '',
-                type: 'reps',
-                sets: 3,
-                reps: 10,
-                duration: 30,
-                restTime: 60
-            });
-
-            const [workoutForm, setWorkoutForm] = useState({
-                name: '',
-                type: 'Strength',
-                exercises: []
-            });
-
-            const [planForm, setPlanForm] = useState({
-                name: '',
-                workouts: []
-            });
-
-            const [stretchForm, setStretchForm] = useState({
-                name: '',
-                duration: 30
-            });
-
-            const trainingTypes = ['Strength', 'Power', 'Projecting', 'Power Endurance', 'Endurance'];
-            const difficultyLevels = ['Easy', 'Moderate', 'Hard', 'Very Hard'];
-
-            // Save to localStorage whenever state changes
-            useEffect(() => {
-                localStorage.setItem('exercises', JSON.stringify(exercises));
-            }, [exercises]);
-
-            useEffect(() => {
-                localStorage.setItem('workouts', JSON.stringify(workouts));
-            }, [workouts]);
-
-            useEffect(() => {
-                localStorage.setItem('trainingPlans', JSON.stringify(trainingPlans));
-            }, [trainingPlans]);
-
-            useEffect(() => {
-                localStorage.setItem('workoutHistory', JSON.stringify(workoutHistory));
-            }, [workoutHistory]);
-
-            useEffect(() => {
-                localStorage.setItem('currentPlan', JSON.stringify(currentPlan));
-            }, [currentPlan]);
-
-            // Timer Logic
-            const timerRef = useRef(null);
-            const restTimerRef = useRef(null);
+                            <button onclick="app.setState({currentView: 'plans'})"
+                                class="nav-btn ${this.state.currentView === 'plans' ? 'active' : ''}">
+                                <span class="icon-calendar"></span>
+                                <span class="text-xs mt-1">Pläne</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
             
-            useEffect(() => {
-                if (isTimerRunning) {
-                    timerRef.current = setInterval(() => {
-                        setTimer(prev => prev + 1);
-                    }, 1000);
-                } else {
-                    clearInterval(timerRef.current);
-                }
-                return () => clearInterval(timerRef.current);
-            }, [isTimerRunning]);
-
-            useEffect(() => {
-                if (isRestTimerRunning) {
-                    restTimerRef.current = setInterval(() => {
-                        setRestTimer(prev => {
-                            if (prev <= 1) {
-                                setIsRestTimerRunning(false);
-                                setShowRestTimer(false);
-                                return 0;
-                            }
-                            return prev - 1;
-                        });
-                    }, 1000);
-                } else {
-                    clearInterval(restTimerRef.current);
-                }
-                return () => clearInterval(restTimerRef.current);
-            }, [isRestTimerRunning]);
-
-            const formatTime = (seconds) => {
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            };
-
-            // Exercise Management
-            const addExercise = () => {
-                const newExercise = {
-                    id: Date.now(),
-                    ...exerciseForm
-                };
-                setExercises([...exercises, newExercise]);
-                setExerciseForm({
-                    name: '',
-                    type: 'reps',
-                    sets: 3,
-                    reps: 10,
-                    duration: 30,
-                    restTime: 60
-                });
-                setCurrentView('exercises');
-            };
-
-            const deleteExercise = (id) => {
-                setExercises(exercises.filter(ex => ex.id !== id));
-            };
-
-            // Workout Management
-            const addWorkout = () => {
-                const newWorkout = {
-                    id: Date.now(),
-                    ...workoutForm,
-                    exercises: [...workoutForm.exercises]
-                };
-                setWorkouts([...workouts, newWorkout]);
-                setWorkoutForm({
-                    name: '',
-                    type: 'Strength',
-                    exercises: []
-                });
-                setCurrentView('workouts');
-            };
-
-            // Training Plan Management
-            const addPlan = () => {
-                const newPlan = {
-                    id: Date.now(),
-                    ...planForm,
-                    workouts: [...planForm.workouts],
-                    currentWorkoutIndex: 0
-                };
-                setTrainingPlans([...trainingPlans, newPlan]);
-                setPlanForm({
-                    name: '',
-                    workouts: []
-                });
-                setCurrentView('plans');
-            };
-
-            const startPlan = (plan) => {
-                setCurrentPlan(plan);
-                setCurrentView('plan-overview');
-            };
-
-            const startWorkoutFromPlan = (workoutIndex) => {
-                const workout = currentPlan.workouts[workoutIndex];
-                setCurrentWorkout({
-                    ...workout,
-                    currentExerciseIndex: 0,
-                    exerciseProgress: workout.exercises.map(() => ({
-                        currentSet: 1,
-                        completed: false,
-                        difficulty: null
-                    })),
-                    fromPlan: true,
-                    planWorkoutIndex: workoutIndex
-                });
-                setCurrentView('workout-overview');
-            };
-
-            const completeWorkoutFromPlan = () => {
-                const updatedPlan = { ...currentPlan };
-                if (currentWorkout.planWorkoutIndex < currentPlan.workouts.length - 1) {
-                    updatedPlan.currentWorkoutIndex = currentWorkout.planWorkoutIndex + 1;
-                }
-                setCurrentPlan(updatedPlan);
+            render() {
+                let content = '';
                 
-                setTrainingPlans(prev => prev.map(plan => 
-                    plan.id === updatedPlan.id ? updatedPlan : plan
-                ));
+                switch (this.state.currentView) {
+                    case 'home':
+                        content = this.renderHome();
+                        break;
+                    case 'exercises':
+                        content = this.renderExercises();
+                        break;
+                    case 'add-exercise':
+                        content = this.renderAddExercise();
+                        break;
+                    case 'workouts':
+                        content = this.renderWorkouts();
+                        break;
+                    case 'plans':
+                        content = this.renderPlans();
+                        break;
+                    case 'exercise-execution':
+                        content = this.renderExerciseExecution();
+                        break;
+                    case 'difficulty-rating':
+                        content = this.renderDifficultyRating();
+                        break;
+                    case 'workout-complete':
+                        content = this.renderWorkoutComplete();
+                        break;
+                    default:
+                        content = this.renderHome();
+                }
                 
-                setCurrentView('add-stretching');
-            };
-
-            const startWorkout = (workout) => {
-                setCurrentWorkout({
-                    ...workout,
-                    currentExerciseIndex: 0,
-                    exerciseProgress: workout.exercises.map(() => ({
-                        currentSet: 1,
-                        completed: false,
-                        difficulty: null
-                    }))
-                });
-                setCurrentView('workout-overview');
-            };
-
-            const startExercise = (exerciseIndex) => {
-                const exercise = currentWorkout.exercises[exerciseIndex];
-                setCurrentExercise({
-                    ...exercise,
-                    index: exerciseIndex
-                });
-                setCurrentSet(1);
-                setCurrentRep(0);
-                setTimer(0);
-                setIsTimerRunning(false);
-                setCurrentView('exercise-execution');
-            };
-
-            const completeSet = () => {
-                if (currentSet < currentExercise.sets) {
-                    setCurrentSet(currentSet + 1);
-                    setCurrentRep(0);
-                    setTimer(0);
-                    setIsTimerRunning(false);
-                    setRestTimer(currentExercise.restTime);
-                    setIsRestTimerRunning(true);
-                    setShowRestTimer(true);
-                } else {
-                    setIsTimerRunning(false);
-                    setCurrentView('difficulty-rating');
-                }
-            };
-
-            const rateDifficulty = (difficulty) => {
-                const updatedWorkout = { ...currentWorkout };
-                updatedWorkout.exerciseProgress[currentExercise.index].difficulty = difficulty;
-                updatedWorkout.exerciseProgress[currentExercise.index].completed = true;
-                updatedWorkout.exerciseProgress[currentExercise.index].completedAt = new Date().toISOString();
-                setCurrentWorkout(updatedWorkout);
-                
-                const historyEntry = {
-                    exerciseId: currentExercise.id,
-                    exerciseName: currentExercise.name,
-                    difficulty: difficulty,
-                    completedAt: new Date().toISOString(),
-                    sets: currentExercise.sets,
-                    type: currentExercise.type,
-                    reps: currentExercise.reps,
-                    duration: currentExercise.duration
-                };
-                
-                setWorkoutHistory(prev => [...prev, historyEntry]);
-                setCurrentView('workout-overview');
-            };
-
-            const completeWorkout = () => {
-                if (currentWorkout?.fromPlan) {
-                    completeWorkoutFromPlan();
-                } else {
-                    setCurrentView('add-stretching');
-                }
-            };
-
-            const addStretchingExercise = () => {
-                const newStretching = {
-                    id: Date.now(),
-                    name: stretchForm.name,
-                    duration: stretchForm.duration,
-                    sets: 2
-                };
-                setStretchingExercises([...stretchingExercises, newStretching]);
-                setStretchForm({ name: '', duration: 30 });
-            };
-
-            const startStretching = (stretchExercise) => {
-                setCurrentStretching({
-                    ...stretchExercise,
-                    currentSet: 1
-                });
-                setTimer(0);
-                setCurrentView('stretching-execution');
-            };
-
-            const completeStretchingSet = () => {
-                if (currentStretching.currentSet < currentStretching.sets) {
-                    setCurrentStretching({
-                        ...currentStretching,
-                        currentSet: currentStretching.currentSet + 1
-                    });
-                    setTimer(0);
-                    setIsTimerRunning(false);
-                    setRestTimer(10);
-                    setIsRestTimerRunning(true);
-                    setShowRestTimer(true);
-                } else {
-                    setCurrentView('add-stretching');
-                }
-            };
-
-            const finishWorkout = () => {
-                const completedWorkout = {
-                    id: Date.now(),
-                    workoutId: currentWorkout?.id,
-                    workoutName: currentWorkout?.name,
-                    workoutType: currentWorkout?.type,
-                    completedAt: new Date().toISOString(),
-                    exercises: currentWorkout?.exerciseProgress || [],
-                    stretching: [...stretchingExercises]
-                };
-                
-                setCurrentWorkout(null);
-                setCurrentExercise(null);
-                setStretchingExercises([]);
-                setCurrentView('workout-complete');
-                
-                setTimeout(() => {
-                    setCurrentView('home');
-                }, 3000);
-            };
-
-            // Drag and Drop Functions
-            const handleDragStart = (e, exercise, index) => {
-                setDraggedExercise({ exercise, index });
-            };
-
-            const handleDragOver = (e) => {
-                e.preventDefault();
-            };
-
-            const handleDrop = (e, targetIndex) => {
-                e.preventDefault();
-                if (draggedExercise && draggedExercise.index !== targetIndex) {
-                    const updatedWorkout = { ...currentWorkout };
-                    const exercises = [...updatedWorkout.exercises];
-                    const progress = [...updatedWorkout.exerciseProgress];
-                    
-                    [exercises[draggedExercise.index], exercises[targetIndex]] = [exercises[targetIndex], exercises[draggedExercise.index]];
-                    [progress[draggedExercise.index], progress[targetIndex]] = [progress[targetIndex], progress[draggedExercise.index]];
-                    
-                    updatedWorkout.exercises = exercises;
-                    updatedWorkout.exerciseProgress = progress;
-                    setCurrentWorkout(updatedWorkout);
-                }
-                setDraggedExercise(null);
-            };
-
-            const handlePlanDragStart = (e, workout, index) => {
-                setDraggedExercise({ exercise: workout, index });
-            };
-
-            const handlePlanDrop = (e, targetIndex) => {
-                e.preventDefault();
-                if (draggedExercise && draggedExercise.index !== targetIndex) {
-                    const updatedPlan = { ...currentPlan };
-                    const workouts = [...updatedPlan.workouts];
-                    
-                    [workouts[draggedExercise.index], workouts[targetIndex]] = [workouts[targetIndex], workouts[draggedExercise.index]];
-                    
-                    updatedPlan.workouts = workouts;
-                    setCurrentPlan(updatedPlan);
-                }
-                setDraggedExercise(null);
-            };
-
-            const replaceExercise = (index, newExercise) => {
-                const updatedWorkout = { ...currentWorkout };
-                updatedWorkout.exercises[index] = newExercise;
-                updatedWorkout.exerciseProgress[index] = {
-                    currentSet: 1,
-                    completed: false,
-                    difficulty: null
-                };
-                setCurrentWorkout(updatedWorkout);
-            };
-
-            // Navigation Component
-            const Navigation = () => (
-                <div className="fixed bottom-0 left-0 right-0 bg-gray-900 px-4 py-2 safe-area-inset-bottom">
-                    <div className="flex justify-around">
-                        <button
-                            onClick={() => setCurrentView('home')}
-                            className={`flex flex-col items-center py-3 px-4 rounded-lg transition-colors ${
-                                currentView === 'home' ? 'text-orange-400' : 'text-gray-400'
-                            }`}
-                        >
-                            <Home size={24} />
-                            <span className="text-xs mt-1 font-medium">Home</span>
-                        </button>
-                        <button
-                            onClick={() => setCurrentView('exercises')}
-                            className={`flex flex-col items-center py-3 px-4 rounded-lg transition-colors ${
-                                currentView === 'exercises' ? 'text-orange-400' : 'text-gray-400'
-                            }`}
-                        >
-                            <Dumbbell size={24} />
-                            <span className="text-xs mt-1 font-medium">Übungen</span>
-                        </button>
-                        <button
-                            onClick={() => setCurrentView('workouts')}
-                            className={`flex flex-col items-center py-3 px-4 rounded-lg transition-colors ${
-                                currentView === 'workouts' ? 'text-orange-400' : 'text-gray-400'
-                            }`}
-                        >
-                            <Play size={24} />
-                            <span className="text-xs mt-1 font-medium">Training</span>
-                        </button>
-                        <button
-                            onClick={() => setCurrentView('plans')}
-                            className={`flex flex-col items-center py-3 px-4 rounded-lg transition-colors ${
-                                currentView === 'plans' ? 'text-orange-400' : 'text-gray-400'
-                            }`}
-                        >
-                            <Calendar size={24} />
-                            <span className="text-xs mt-1 font-medium">Pläne</span>
-                        </button>
-                    </div>
-                </div>
-            );
-
-            // Home View
-            const HomeView = () => (
-                <div className="bg-gray-900 min-h-screen text-white">
-                    <div className="p-6 pb-24">
-                        <div className="flex items-center justify-between mb-8">
-                            <div>
-                                <h1 className="text-3xl font-bold">Training</h1>
-                                <p className="text-gray-400 mt-1">Ready to climb stronger?</p>
-                            </div>
-                        </div>
-                        
-                        <div className="space-y-6">
-                            <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6">
-                                <h2 className="text-xl font-bold mb-2">Nächstes Training</h2>
-                                {trainingPlans.length > 0 && currentPlan ? (
-                                    <>
-                                        <p className="text-orange-100 mb-1">{currentPlan.name}</p>
-                                        <p className="text-orange-200 text-sm mb-4">
-                                            {currentPlan.workouts[currentPlan.currentWorkoutIndex]?.name || 'Plan abgeschlossen'}
-                                        </p>
-                                        <button 
-                                            onClick={() => setCurrentView('plan-overview')}
-                                            className="bg-white text-orange-600 px-6 py-3 rounded-xl font-bold"
-                                        >
-                                            Plan fortsetzen
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <p className="text-orange-100 mb-4">Erstelle deinen ersten Trainingsplan</p>
-                                        <button 
-                                            onClick={() => setCurrentView('plans')}
-                                            className="bg-white text-orange-600 px-6 py-3 rounded-xl font-bold"
-                                        >
-                                            Plan erstellen
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-gray-800 rounded-2xl p-4">
-                                    <h3 className="text-gray-400 text-sm font-medium mb-1">Übungen</h3>
-                                    <p className="text-3xl font-bold text-white">{exercises.length}</p>
-                                </div>
-                                <div className="bg-gray-800 rounded-2xl p-4">
-                                    <h3 className="text-gray-400 text-sm font-medium mb-1">Pläne</h3>
-                                    <p className="text-3xl font-bold text-white">{trainingPlans.length}</p>
-                                </div>
-                            </div>
-
-                            <div className="bg-gray-800 rounded-2xl p-4">
-                                <h3 className="text-lg font-bold mb-3">Letzte Trainings</h3>
-                                <div className="space-y-3">
-                                    {workoutHistory.slice(-3).map((entry, index) => (
-                                        <div key={index} className="flex justify-between items-center">
-                                            <div>
-                                                <p className="font-medium">{entry.exerciseName}</p>
-                                                <p className="text-sm text-gray-400">
-                                                    {new Date(entry.completedAt).toLocaleDateString('de-DE')}
-                                                </p>
-                                            </div>
-                                            <div className="text-orange-400 font-medium">
-                                                {entry.difficulty}
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {workoutHistory.length === 0 && (
-                                        <p className="text-gray-400 text-center py-4">Noch keine Trainings absolviert</p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-
-            // Exercises View
-            const ExercisesView = () => (
-                <div className="bg-gray-900 min-h-screen text-white">
-                    <div className="p-6 pb-24">
-                        <div className="flex justify-between items-center mb-6">
-                            <h1 className="text-2xl font-bold">Übungen</h1>
-                            <button
-                                onClick={() => setCurrentView('add-exercise')}
-                                className="bg-orange-500 text-white p-3 rounded-full"
-                            >
-                                <Plus size={24} />
-                            </button>
-                        </div>
-
-                        <div className="space-y-3">
-                            {exercises.map(exercise => (
-                                <div key={exercise.id} className="bg-gray-800 rounded-2xl p-4">
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex-1">
-                                            <h3 className="font-bold text-lg">{exercise.name}</h3>
-                                            <p className="text-gray-400 mt-1">
-                                                {exercise.sets} Sätze × {exercise.type === 'reps' ? `${exercise.reps} Wdh.` : `${exercise.duration}s`}
-                                            </p>
-                                            <p className="text-sm text-gray-500">Pause: {exercise.restTime}s</p>
-                                        </div>
-                                        <div className="flex space-x-3">
-                                            <button className="text-gray-400 hover:text-orange-400 transition-colors">
-                                                <Edit size={20} />
-                                            </button>
-                                            <button 
-                                                onClick={() => deleteExercise(exercise.id)}
-                                                className="text-gray-400 hover:text-red-400 transition-colors"
-                                            >
-                                                <Trash2 size={20} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                            {exercises.length === 0 && (
-                                <div className="text-center py-12">
-                                    <p className="text-gray-400 mb-4">Noch keine Übungen erstellt</p>
-                                    <button
-                                        onClick={() => setCurrentView('add-exercise')}
-                                        className="bg-orange-500 text-white px-6 py-3 rounded-xl font-bold"
-                                    >
-                                        Erste Übung hinzufügen
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            );
-
-            // Add Exercise View
-            const AddExerciseView = () => (
-                <div className="bg-gray-900 min-h-screen text-white">
-                    <div className="p-6 pb-24">
-                        <div className="flex items-center mb-6">
-                            <button onClick={() => setCurrentView('exercises')} className="mr-4 text-gray-400">
-                                <ChevronLeft size={24} />
-                            </button>
-                            <h1 className="text-2xl font-bold">Übung hinzufügen</h1>
-                        </div>
-
-                        <div className="space-y-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-3">Name</label>
-                                <input
-                                    type="text"
-                                    value={exerciseForm.name}
-                                    onChange={(e) => setExerciseForm({...exerciseForm, name: e.target.value})}
-                                    className="w-full p-4 bg-gray-800 border border-gray-700 rounded-xl text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                    placeholder="z.B. Klimmzüge"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-3">Typ</label>
-                                <div className="flex space-x-3">
-                                    <button
-                                        onClick={() => setExerciseForm({...exerciseForm, type: 'reps'})}
-                                        className={`flex-1 p-4 rounded-xl border-2 font-bold transition-colors ${
-                                            exerciseForm.type === 'reps' 
-                                                ? 'bg-orange-500 border-orange-500 text-white' 
-                                                : 'border-gray-700 text-gray-400'
-                                        }`}
-                                    >
-                                        Wiederholungen
-                                    </button>
-                                    <button
-                                        onClick={() => setExerciseForm({...exerciseForm, type: 'time'})}
-                                        className={`flex-1 p-4 rounded-xl border-2 font-bold transition-colors ${
-                                            exerciseForm.type === 'time' 
-                                                ? 'bg-orange-500 border-orange-500 text-white' 
-                                                : 'border-gray-700 text-gray-400'
-                                        }`}
-                                    >
-                                        Zeit
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-300 mb-3">Sätze</label>
-                                    <input
-                                        type="number"
-                                        value={exerciseForm.sets}
-                                        onChange={(e) => setExerciseForm({...exerciseForm, sets: parseInt(e.target.value)})}
-                                        className="w-full p-4 bg-gray-800 border border-gray-700 rounded-xl text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                    />
-                                </div>
-                                
-                                {exerciseForm.type === 'reps' ? (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-3">Wiederholungen</label>
-                                        <input
-                                            type="number"
-                                            value={exerciseForm.reps}
-                                            onChange={(e) => setExerciseForm({...exerciseForm, reps: parseInt(e.target.value)})}
-                                            className="w-full p-4 bg-gray-800 border border-gray-700 rounded-xl text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                        />
-                                    </div>
-                                ) : (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-300 mb-3">Dauer (Sek.)</label>
-                                        <input
-                                            type="number"
-                                            value={exerciseForm.duration}
-                                            onChange={(e) => setExerciseForm({...exerciseForm, duration: parseInt(e.target.value)})}
-                                            className="w-full p-4 bg-gray-800 border border-gray-700 rounded-xl text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                        />
-                                    </div>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-3">Pausenzeit (Sek.)</label>
-                                <input
-                                    type="number"
-                                    value={exerciseForm.restTime}
-                                    onChange={(e) => setExerciseForm({...exerciseForm, restTime: parseInt(e.target.value)})}
-                                    className="w-full p-4 bg-gray-800 border border-gray-700 rounded-xl text-white focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                />
-                            </div>
-
-                            <button
-                                onClick={addExercise}
-                                disabled={!exerciseForm.name}
-                                className="w-full bg-orange-500 text-white py-4 rounded-xl font-bold text-lg disabled:bg-gray-600 disabled:cursor-not-allowed"
-                            >
-                                Übung hinzufügen
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            );
-
-            // Workouts View
-            const WorkoutsView = () => (
-                <div className="bg-gray-900 min-h-screen text-white">
-                    <div className="p-6 pb-24">
-                        <div className="flex justify-between items-center mb-6">
-                            <h1 className="text-2xl font-bold">Trainings</h1>
-                            <button
-                                onClick={() => setCurrentView('add-workout')}
-                                className="bg-orange-500 text-white p-3 rounded-full"
-                            >
-                                <Plus size={24} />
-                            </button>
-                        </div>
-
-                        <div className="space-y-4">
-                            {workouts.map(workout => (
-                                <div key={workout.id} className="bg-gray-800 rounded-2xl p-4">
-                                    <div className="flex justify-between items-start mb-3">
-                                        <div className="flex-1">
-                                            <h3 className="font-bold text-lg">{workout.name}</h3>
-                                            <p className="text-orange-400 font-medium">{workout.type}</p>
-                                            <p className="text-sm text-gray-400 mt-1">{workout.exercises.length} Übungen</p>
-                                        </div>
-                                        <button
-                                            onClick={() => startWorkout(workout)}
-                                            className="bg-orange-500 text-white px-6 py-3 rounded-xl font-bold flex items-center space-x-2"
-                                        >
-                                            <Play size={18} />
-                                            <span>Start</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                            {workouts.length === 0 && (
-                                <div className="text-center py-12">
-                                    <p className="text-gray-400 mb-4">Noch keine Trainings erstellt</p>
-                                    <button
-                                        onClick={() => setCurrentView('add-workout')}
-                                        className="bg-orange-500 text-white px-6 py-3 rounded-xl font-bold"
-                                    >
-                                        Erstes Training hinzufügen
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            );
-
-            // Continue with all other views...
-            const renderCurrentView = () => {
-                switch (currentView) {
-                    case 'home': return <HomeView />;
-                    case 'exercises': return <ExercisesView />;
-                    case 'add-exercise': return <AddExerciseView />;
-                    case 'workouts': return <WorkoutsView />;
-                    default: return <HomeView />;
-                }
-            };
-
-            return (
-                <div className="min-h-screen bg-gray-900">
-                    {renderCurrentView()}
-                    <Navigation />
-                </div>
-            );
-        };
-
-        // Hide loading screen and render app
-        const renderApp = () => {
-            document.getElementById('loading').style.display = 'none';
-            ReactDOM.render(<ClimbingTrainingApp />, document.getElementById('root'));
-        };
-
-        // Initialize app when everything is loaded
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', renderApp);
-        } else {
-            renderApp();
+                document.getElementById('app').innerHTML = content + this.renderNavigation();
+            }
         }
-
-        // Service Worker for PWA functionality
+        
+        // Initialize app
+        const app = new ClimbingApp();
+        
+        // Service Worker for PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
-                    const CACHE_NAME = 'climbing-training-v1';
+                    const CACHE_NAME = 'climbing-training-v3';
                     const urlsToCache = ['/'];
                     
                     self.addEventListener('install', (event) => {
@@ -894,10 +73,699 @@
                 const swUrl = URL.createObjectURL(blob);
                 
                 navigator.serviceWorker.register(swUrl)
-                    .then((registration) => console.log('SW registered'))
-                    .catch((error) => console.log('SW registration failed'));
+                    .then(() => console.log('SW registered'))
+                    .catch(() => console.log('SW registration failed'));
             });
         }
     </script>
 </body>
-</html>
+</html><!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climbing Training</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1f2937">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ClimbTraining">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #111827;
+            color: white;
+            overflow-x: hidden;
+            user-select: none;
+        }
+        
+        /* Layout utilities */
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-around { justify-content: space-around; }
+        .space-y-3 > * + * { margin-top: 0.75rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .space-y-6 > * + * { margin-top: 1.5rem; }
+        .space-x-2 > * + * { margin-left: 0.5rem; }
+        .space-x-3 > * + * { margin-left: 0.75rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .w-full { width: 100%; }
+        .flex-1 { flex: 1; }
+        .text-center { text-align: center; }
+        .hidden { display: none; }
+        
+        /* Typography */
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .font-mono { font-family: monospace; }
+        .text-xs { font-size: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .text-4xl { font-size: 2.25rem; }
+        .text-8xl { font-size: 6rem; }
+        
+        /* Colors */
+        .text-gray-400 { color: #9ca3af; }
+        .text-gray-300 { color: #d1d5db; }
+        .text-orange-400 { color: #fb923c; }
+        .text-orange-600 { color: #ea580c; }
+        .text-green-400 { color: #4ade80; }
+        .text-red-400 { color: #f87171; }
+        .bg-gray-800 { background: #1f2937; }
+        .bg-gray-700 { background: #374151; }
+        .bg-gray-600 { background: #4b5563; }
+        .bg-orange-500 { background: #f97316; }
+        .bg-green-500 { background: #10b981; }
+        .bg-red-500 { background: #ef4444; }
+        .bg-yellow-500 { background: #eab308; }
+        .bg-gradient { background: linear-gradient(to right, #f97316, #ef4444); }
+        
+        /* Layout components */
+        .container { padding: 1.5rem; padding-bottom: 6rem; min-height: 100vh; }
+        .card { background: #1f2937; padding: 1rem; border-radius: 1rem; margin-bottom: 0.75rem; }
+        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #111827; padding: 0.5rem; }
+        
+        /* Buttons */
+        .btn { padding: 0.75rem 1.5rem; border-radius: 0.75rem; border: none; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #f97316; color: white; }
+        .btn-primary:hover { background: #ea580c; }
+        .btn-secondary { background: #374151; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-large { padding: 1.5rem; font-size: 1.25rem; }
+        .btn-round { width: 3rem; height: 3rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* Forms */
+        .input { width: 100%; padding: 1rem; background: #1f2937; border: 1px solid #374151; border-radius: 0.75rem; color: white; font-size: 16px; }
+        .input:focus { outline: none; border-color: #f97316; }
+        
+        /* Navigation */
+        .nav-btn { 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 0.75rem; 
+            border-radius: 0.5rem; 
+            background: none; 
+            border: none; 
+            color: #6b7280; 
+            cursor: pointer; 
+            transition: color 0.2s; 
+        }
+        .nav-btn.active { color: #f97316; }
+        .nav-btn:hover { color: #fb923c; }
+        
+        /* Special displays */
+        .timer-display { 
+            font-size: 6rem; 
+            font-family: monospace; 
+            font-weight: bold; 
+            text-align: center; 
+            margin: 2rem 0; 
+            color: white;
+        }
+        .set-counter { 
+            font-size: 2rem; 
+            font-weight: bold; 
+            text-align: center; 
+            color: #f97316; 
+            margin-bottom: 1rem; 
+        }
+        
+        /* Overlay */
+        .overlay { 
+            position: fixed; 
+            top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(0,0,0,0.8); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 1000; 
+        }
+        .overlay-content { 
+            background: #1f2937; 
+            padding: 2rem; 
+            border-radius: 1rem; 
+            text-align: center; 
+            max-width: 90vw; 
+        }
+        
+        /* Icons using emoji for speed */
+        .icon-home::before { content: "🏠"; font-size: 1.5rem; }
+        .icon-dumbbell::before { content: "💪"; font-size: 1.5rem; }
+        .icon-play::before { content: "▶️"; font-size: 1.5rem; }
+        .icon-calendar::before { content: "📅"; font-size: 1.5rem; }
+        .icon-plus::before { content: "+"; font-size: 1.5rem; font-weight: bold; }
+        .icon-back::before { content: "←"; font-size: 1.5rem; }
+        .icon-edit::before { content: "✏️"; font-size: 1rem; }
+        .icon-delete::before { content: "🗑️"; font-size: 1rem; }
+        .icon-check::before { content: "✅"; font-size: 1.5rem; }
+        .icon-x::before { content: "❌"; font-size: 1rem; }
+        .icon-reset::before { content: "↻"; font-size: 1.5rem; }
+        
+        /* Utilities */
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mr-2 { margin-right: 0.5rem; }
+        .mr-4 { margin-right: 1rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+        
+        /* Drag and drop */
+        .draggable { cursor: move; }
+        .draggable:hover { background: #374151; }
+        
+        /* Difficulty buttons */
+        .diff-easy { background: linear-gradient(to right, #10b981, #059669); }
+        .diff-moderate { background: linear-gradient(to right, #eab308, #ca8a04); }
+        .diff-hard { background: linear-gradient(to right, #f97316, #ea580c); }
+        .diff-very-hard { background: linear-gradient(to right, #ef4444, #dc2626); }
+        
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .timer-display { font-size: 4rem; }
+            .container { padding: 1rem; padding-bottom: 5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script>
+        class ClimbingApp {
+            constructor() {
+                this.state = {
+                    currentView: 'home',
+                    exercises: JSON.parse(localStorage.getItem('exercises') || '[]'),
+                    workouts: JSON.parse(localStorage.getItem('workouts') || '[]'),
+                    trainingPlans: JSON.parse(localStorage.getItem('trainingPlans') || '[]'),
+                    currentWorkout: null,
+                    currentExercise: null,
+                    currentPlan: JSON.parse(localStorage.getItem('currentPlan') || 'null'),
+                    timer: 0,
+                    isTimerRunning: false,
+                    currentSet: 1,
+                    currentRep: 0,
+                    restTimer: 0,
+                    isRestTimerRunning: false,
+                    showRestTimer: false,
+                    stretchingExercises: [],
+                    currentStretching: null,
+                    replacementIndex: null,
+                    exerciseForm: { name: '', type: 'reps', sets: 3, reps: 10, duration: 30, restTime: 60 },
+                    workoutForm: { name: '', type: 'Strength', exercises: [] },
+                    planForm: { name: '', workouts: [] },
+                    stretchForm: { name: '', duration: 30 }
+                };
+                
+                this.trainingTypes = ['Strength', 'Power', 'Projecting', 'Power Endurance', 'Endurance'];
+                this.difficultyLevels = ['Easy', 'Moderate', 'Hard', 'Very Hard'];
+                
+                this.init();
+            }
+            
+            init() {
+                this.render();
+                this.startTimers();
+            }
+            
+            setState(newState) {
+                Object.assign(this.state, newState);
+                this.saveToStorage();
+                this.render();
+            }
+            
+            saveToStorage() {
+                ['exercises', 'workouts', 'trainingPlans', 'currentPlan'].forEach(key => {
+                    if (this.state[key] !== null) {
+                        localStorage.setItem(key, JSON.stringify(this.state[key]));
+                    }
+                });
+            }
+            
+            formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            
+            startTimers() {
+                setInterval(() => {
+                    if (this.state.isTimerRunning) {
+                        this.setState({ timer: this.state.timer + 1 });
+                    }
+                    if (this.state.isRestTimerRunning) {
+                        if (this.state.restTimer <= 1) {
+                            this.setState({ 
+                                isRestTimerRunning: false, 
+                                showRestTimer: false, 
+                                restTimer: 0 
+                            });
+                        } else {
+                            this.setState({ restTimer: this.state.restTimer - 1 });
+                        }
+                    }
+                }, 1000);
+            }
+            
+            // Exercise Management
+            addExercise() {
+                if (!this.state.exerciseForm.name) return;
+                const newExercise = { id: Date.now(), ...this.state.exerciseForm };
+                this.setState({
+                    exercises: [...this.state.exercises, newExercise],
+                    exerciseForm: { name: '', type: 'reps', sets: 3, reps: 10, duration: 30, restTime: 60 },
+                    currentView: 'exercises'
+                });
+            }
+            
+            deleteExercise(id) {
+                this.setState({ exercises: this.state.exercises.filter(ex => ex.id !== id) });
+            }
+            
+            // Workout Management
+            addWorkout() {
+                if (!this.state.workoutForm.name) return;
+                const newWorkout = { id: Date.now(), ...this.state.workoutForm, exercises: [...this.state.workoutForm.exercises] };
+                this.setState({
+                    workouts: [...this.state.workouts, newWorkout],
+                    workoutForm: { name: '', type: 'Strength', exercises: [] },
+                    currentView: 'workouts'
+                });
+            }
+            
+            startWorkout(workout) {
+                this.setState({
+                    currentWorkout: {
+                        ...workout,
+                        exerciseProgress: workout.exercises.map(() => ({ currentSet: 1, completed: false }))
+                    },
+                    currentView: 'workout-overview'
+                });
+            }
+            
+            // Plan Management
+            addPlan() {
+                if (!this.state.planForm.name || this.state.planForm.workouts.length === 0) return;
+                const newPlan = { id: Date.now(), ...this.state.planForm, workouts: [...this.state.planForm.workouts], currentWorkoutIndex: 0 };
+                this.setState({
+                    trainingPlans: [...this.state.trainingPlans, newPlan],
+                    planForm: { name: '', workouts: [] },
+                    currentView: 'plans'
+                });
+            }
+            
+            startWorkoutFromPlan(workoutIndex) {
+                const workout = this.state.currentPlan.workouts[workoutIndex];
+                this.setState({
+                    currentWorkout: {
+                        ...workout,
+                        exerciseProgress: workout.exercises.map(() => ({ currentSet: 1, completed: false })),
+                        fromPlan: true,
+                        planWorkoutIndex: workoutIndex
+                    },
+                    currentView: 'workout-overview'
+                });
+            }
+            
+            // Exercise Execution
+            startExercise(exerciseIndex) {
+                const exercise = this.state.currentWorkout.exercises[exerciseIndex];
+                this.setState({
+                    currentExercise: { ...exercise, index: exerciseIndex },
+                    currentSet: 1,
+                    currentRep: 0,
+                    timer: 0,
+                    isTimerRunning: false,
+                    currentView: 'exercise-execution'
+                });
+            }
+            
+            completeSet() {
+                if (this.state.currentSet < this.state.currentExercise.sets) {
+                    this.setState({
+                        currentSet: this.state.currentSet + 1,
+                        currentRep: 0,
+                        timer: 0,
+                        isTimerRunning: false,
+                        restTimer: this.state.currentExercise.restTime,
+                        isRestTimerRunning: true,
+                        showRestTimer: true
+                    });
+                } else {
+                    this.setState({ isTimerRunning: false, currentView: 'difficulty-rating' });
+                }
+            }
+            
+            rateDifficulty(difficulty) {
+                const updatedWorkout = { ...this.state.currentWorkout };
+                updatedWorkout.exerciseProgress[this.state.currentExercise.index].completed = true;
+                this.setState({ currentWorkout: updatedWorkout, currentView: 'workout-overview' });
+            }
+            
+            completeWorkout() {
+                if (this.state.currentWorkout?.fromPlan) {
+                    const updatedPlan = { ...this.state.currentPlan };
+                    if (this.state.currentWorkout.planWorkoutIndex < this.state.currentPlan.workouts.length - 1) {
+                        updatedPlan.currentWorkoutIndex = this.state.currentWorkout.planWorkoutIndex + 1;
+                    }
+                    this.setState({ currentPlan: updatedPlan });
+                    this.setState({ trainingPlans: this.state.trainingPlans.map(plan => plan.id === updatedPlan.id ? updatedPlan : plan) });
+                }
+                this.setState({ currentView: 'add-stretching' });
+            }
+            
+            // Stretching
+            addStretchingExercise() {
+                if (!this.state.stretchForm.name) return;
+                const newStretching = { id: Date.now(), name: this.state.stretchForm.name, duration: this.state.stretchForm.duration, sets: 2 };
+                this.setState({
+                    stretchingExercises: [...this.state.stretchingExercises, newStretching],
+                    stretchForm: { name: '', duration: 30 }
+                });
+            }
+            
+            startStretching(stretchExercise) {
+                this.setState({
+                    currentStretching: { ...stretchExercise, currentSet: 1 },
+                    timer: 0,
+                    currentView: 'stretching-execution'
+                });
+            }
+            
+            completeStretchingSet() {
+                if (this.state.currentStretching.currentSet < this.state.currentStretching.sets) {
+                    this.setState({
+                        currentStretching: { ...this.state.currentStretching, currentSet: this.state.currentStretching.currentSet + 1 },
+                        timer: 0,
+                        isTimerRunning: false,
+                        restTimer: 10,
+                        isRestTimerRunning: true,
+                        showRestTimer: true
+                    });
+                } else {
+                    this.setState({ currentView: 'add-stretching' });
+                }
+            }
+            
+            finishWorkout() {
+                // Add to simple history (just workout name and date)
+                const historyEntry = {
+                    workoutName: this.state.currentWorkout?.name || 'Training',
+                    workoutType: this.state.currentWorkout?.type || '',
+                    completedAt: new Date().toISOString(),
+                    exerciseCount: this.state.currentWorkout?.exercises?.length || 0
+                };
+                
+                let history = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
+                
+                // Clean old entries (older than 6 weeks)
+                const sixWeeksAgo = new Date();
+                sixWeeksAgo.setDate(sixWeeksAgo.getDate() - 42);
+                history = history.filter(entry => new Date(entry.completedAt) > sixWeeksAgo);
+                
+                // Add new entry
+                history.push(historyEntry);
+                localStorage.setItem('workoutHistory', JSON.stringify(history));
+                
+                this.setState({
+                    currentWorkout: null,
+                    currentExercise: null,
+                    stretchingExercises: [],
+                    currentView: 'workout-complete'
+                });
+                
+                setTimeout(() => this.setState({ currentView: 'home' }), 2000);
+            }
+            
+            // Drag and drop for exercises
+            moveExercise(fromIndex, toIndex) {
+                const updatedWorkout = { ...this.state.currentWorkout };
+                const exercises = [...updatedWorkout.exercises];
+                const progress = [...updatedWorkout.exerciseProgress];
+                
+                [exercises[fromIndex], exercises[toIndex]] = [exercises[toIndex], exercises[fromIndex]];
+                [progress[fromIndex], progress[toIndex]] = [progress[toIndex], progress[fromIndex]];
+                
+                updatedWorkout.exercises = exercises;
+                updatedWorkout.exerciseProgress = progress;
+                this.setState({ currentWorkout: updatedWorkout });
+            }
+            
+            // Replace exercise
+            replaceExercise(index, newExercise) {
+                const updatedWorkout = { ...this.state.currentWorkout };
+                updatedWorkout.exercises[index] = newExercise;
+                updatedWorkout.exerciseProgress[index] = { currentSet: 1, completed: false };
+                this.setState({ currentWorkout: updatedWorkout, replacementIndex: null, currentView: 'workout-overview' });
+            }
+            
+            // Form handlers
+            updateForm(form, field, value) {
+                this.setState({ [form]: { ...this.state[form], [field]: value } });
+            }
+            
+            addExerciseToWorkout(exercise) {
+                if (!this.state.workoutForm.exercises.find(ex => ex.id === exercise.id)) {
+                    this.setState({
+                        workoutForm: { ...this.state.workoutForm, exercises: [...this.state.workoutForm.exercises, exercise] }
+                    });
+                }
+            }
+            
+            removeExerciseFromWorkout(index) {
+                this.setState({
+                    workoutForm: {
+                        ...this.state.workoutForm,
+                        exercises: this.state.workoutForm.exercises.filter((_, i) => i !== index)
+                    }
+                });
+            }
+            
+            addWorkoutToPlan(workout) {
+                if (!this.state.planForm.workouts.find(w => w.id === workout.id)) {
+                    this.setState({
+                        planForm: { ...this.state.planForm, workouts: [...this.state.planForm.workouts, workout] }
+                    });
+                }
+            }
+            
+            removeWorkoutFromPlan(index) {
+                this.setState({
+                    planForm: {
+                        ...this.state.planForm,
+                        workouts: this.state.planForm.workouts.filter((_, i) => i !== index)
+                    }
+                });
+            }
+            
+            renderExercises() {
+                return `
+                    <div class="container">
+                        <div class="flex justify-between items-center mb-6">
+                            <h1 class="text-2xl font-bold">Übungen</h1>
+                            <button onclick="app.setState({currentView: 'add-exercise'})" class="btn-round btn-primary">
+                                <span class="icon-plus"></span>
+                            </button>
+                        </div>
+
+                        <div class="space-y-3">
+                            ${this.state.exercises.map(exercise => `
+                                <div class="card">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1">
+                                            <h3 class="font-bold text-lg">${exercise.name}</h3>
+                                            <p class="text-gray-400 mt-1">
+                                                ${exercise.sets} Sätze × ${exercise.type === 'reps' ? `${exercise.reps} Wdh.` : `${exercise.duration}s`}
+                                            </p>
+                                            <p class="text-sm text-gray-400">Pause: ${exercise.restTime}s</p>
+                                        </div>
+                                        <div class="flex space-x-2">
+                                            <button onclick="app.deleteExercise(${exercise.id})" class="text-red-400">
+                                                <span class="icon-delete"></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('') || `
+                                <div class="text-center py-12">
+                                    <p class="text-gray-400 mb-4">Noch keine Übungen erstellt</p>
+                                    <button onclick="app.setState({currentView: 'add-exercise'})" class="btn btn-primary">
+                                        Erste Übung hinzufügen
+                                    </button>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            renderAddExercise() {
+                return `
+                    <div class="container">
+                        <div class="flex items-center mb-6">
+                            <button onclick="app.setState({currentView: 'exercises'})" class="mr-4 text-gray-400">
+                                <span class="icon-back"></span>
+                            </button>
+                            <h1 class="text-2xl font-bold">Übung hinzufügen</h1>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-3">Name</label>
+                                <input type="text" value="${this.state.exerciseForm.name}" 
+                                    oninput="app.updateForm('exerciseForm', 'name', this.value)"
+                                    class="input" placeholder="z.B. Klimmzüge">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-3">Typ</label>
+                                <div class="grid-2">
+                                    <button onclick="app.updateForm('exerciseForm', 'type', 'reps')" 
+                                        class="btn ${this.state.exerciseForm.type === 'reps' ? 'btn-primary' : 'btn-secondary'}">
+                                        Wiederholungen
+                                    </button>
+                                    <button onclick="app.updateForm('exerciseForm', 'type', 'time')" 
+                                        class="btn ${this.state.exerciseForm.type === 'time' ? 'btn-primary' : 'btn-secondary'}">
+                                        Zeit
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid-2">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-3">Sätze</label>
+                                    <input type="number" value="${this.state.exerciseForm.sets}" 
+                                        oninput="app.updateForm('exerciseForm', 'sets', parseInt(this.value))"
+                                        class="input">
+                                </div>
+                                
+                                ${this.state.exerciseForm.type === 'reps' ? `
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-300 mb-3">Wiederholungen</label>
+                                        <input type="number" value="${this.state.exerciseForm.reps}" 
+                                            oninput="app.updateForm('exerciseForm', 'reps', parseInt(this.value))"
+                                            class="input">
+                                    </div>
+                                ` : `
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-300 mb-3">Dauer (Sek.)</label>
+                                        <input type="number" value="${this.state.exerciseForm.duration}" 
+                                            oninput="app.updateForm('exerciseForm', 'duration', parseInt(this.value))"
+                                            class="input">
+                                    </div>
+                                `}
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-3">Pausenzeit (Sek.)</label>
+                                <input type="number" value="${this.state.exerciseForm.restTime}" 
+                                    oninput="app.updateForm('exerciseForm', 'restTime', parseInt(this.value))"
+                                    class="input">
+                            </div>
+
+                            <button onclick="app.addExercise()" class="btn btn-primary btn-large w-full">
+                                Übung hinzufügen
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            renderWorkouts() {
+                return `
+                    <div class="container">
+                        <div class="flex justify-between items-center mb-6">
+                            <h1 class="text-2xl font-bold">Trainings</h1>
+                            <button onclick="app.setState({currentView: 'add-workout'})" class="btn-round btn-primary">
+                                <span class="icon-plus"></span>
+                            </button>
+                        </div>
+
+                        <div class="space-y-4">
+                            ${this.state.workouts.map(workout => `
+                                <div class="card">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1">
+                                            <h3 class="font-bold text-lg">${workout.name}</h3>
+                                            <p class="text-orange-400 font-medium">${workout.type}</p>
+                                            <p class="text-sm text-gray-400 mt-1">${workout.exercises.length} Übungen</p>
+                                        </div>
+                                        <button onclick="app.startWorkout(${JSON.stringify(workout).replace(/"/g, '&quot;')})" 
+                                            class="btn btn-primary">
+                                            <span class="icon-play mr-2"></span>Start
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('') || `
+                                <div class="text-center py-12">
+                                    <p class="text-gray-400 mb-4">Noch keine Trainings erstellt</p>
+                                    <button onclick="app.setState({currentView: 'add-workout'})" class="btn btn-primary">
+                                        Erstes Training hinzufügen
+                                    </button>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            renderPlans() {
+                return `
+                    <div class="container">
+                        <div class="flex justify-between items-center mb-6">
+                            <h1 class="text-2xl font-bold">Trainingspläne</h1>
+                            <button onclick="app.setState({currentView: 'add-plan'})" class="btn-round btn-primary">
+                                <span class="icon-plus"></span>
+                            </button>
+                        </div>
+
+                        <div class="space-y-4">
+                            ${this.state.trainingPlans.map(plan => `
+                                <div class="card">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1">
+                                            <h3 class="font-bold text-lg">${plan.name}</h3>
+                                            <p class="text-gray-400">${plan.workouts.length} Trainingseinheiten</p>
+                                            <p class="text-sm text-orange-400 mt-1">
+                                                Nächstes: ${plan.workouts[plan.currentWorkoutIndex]?.name || 'Plan abgeschlossen'}
+                                            </p>
+                                        </div>
+                                        <button onclick="app.setState({currentPlan: ${JSON.stringify(plan).replace(/"/g, '&quot;')}, currentView: 'plan-overview'})" 
+                                            class="btn btn-primary">
+                                            <span class="icon-play mr-2"></span>Start
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('') || `
+                                <div class="text-center py-12">
+                                    <p class="text-gray-400 mb-4">Noch keine Trainingspläne erstellt</p>
+                                    <button onclick="app.setState({currentView: 'add-plan'})" class="btn btn-primary">
+                                        Ersten Plan erstellen
+                                    </button>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }
