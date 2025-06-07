@@ -500,7 +500,7 @@
                 const [showForm, setShowForm] = useState(false);
                 const [editingSession, setEditingSession] = useState(null);
 
-const handleSave = (session) => {
+                const handleSave = (session) => {
                     if (editingSession) {
                         setSessions(sessions.map(s => s.id === session.id ? session : s));
                     } else {
