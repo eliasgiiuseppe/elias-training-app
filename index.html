@@ -1,771 +1,1087 @@
-                            <button onclick="app.setState({currentView: 'plans'})"
-                                class="nav-btn ${this.state.currentView === 'plans' ? 'active' : ''}">
-                                <span class="icon-calendar"></span>
-                                <span class="text-xs mt-1">Pläne</span>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            render() {
-                let content = '';
-                
-                switch (this.state.currentView) {
-                    case 'home':
-                        content = this.renderHome();
-                        break;
-                    case 'exercises':
-                        content = this.renderExercises();
-                        break;
-                    case 'add-exercise':
-                        content = this.renderAddExercise();
-                        break;
-                    case 'workouts':
-                        content = this.renderWorkouts();
-                        break;
-                    case 'plans':
-                        content = this.renderPlans();
-                        break;
-                    case 'exercise-execution':
-                        content = this.renderExerciseExecution();
-                        break;
-                    case 'difficulty-rating':
-                        content = this.renderDifficultyRating();
-                        break;
-                    case 'workout-complete':
-                        content = this.renderWorkoutComplete();
-                        break;
-                    default:
-                        content = this.renderHome();
-                }
-                
-                document.getElementById('app').innerHTML = content + this.renderNavigation();
-            }
-        }
-        
-        // Initialize app
-        const app = new ClimbingApp();
-        
-        // Service Worker for PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                const swCode = `
-                    const CACHE_NAME = 'climbing-training-v3';
-                    const urlsToCache = ['/'];
-                    
-                    self.addEventListener('install', (event) => {
-                        event.waitUntil(
-                            caches.open(CACHE_NAME)
-                                .then((cache) => cache.addAll(urlsToCache))
-                        );
-                    });
-                    
-                    self.addEventListener('fetch', (event) => {
-                        event.respondWith(
-                            caches.match(event.request)
-                                .then((response) => response || fetch(event.request))
-                        );
-                    });
-                `;
-                
-                const blob = new Blob([swCode], { type: 'application/javascript' });
-                const swUrl = URL.createObjectURL(blob);
-                
-                navigator.serviceWorker.register(swUrl)
-                    .then(() => console.log('SW registered'))
-                    .catch(() => console.log('SW registration failed'));
-            });
-        }
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Climbing Training</title>
+import React, { useState, useEffect, useRef } from 'react';
+import { ChevronRight, Plus, Edit2, Trash2, Play, Pause, RotateCcw, Check, X, Menu, Dumbbell, Calendar, BarChart, Settings, Clock, RefreshCw, GripVertical, ArrowLeft } from 'lucide-react';
+
+// Utility functions
+const generateId = () => Date.now().toString(36) + Math.random().toString(36).substr(2);
+
+// Default training types
+const DEFAULT_TRAINING_TYPES = [
+  'Strength',
+  'Power',
+  'Projecting',
+  'Power Endurance',
+  'Endurance'
+];
+
+// Main App Component
+const App = () => {
+  // State management
+  const [exercises, setExercises] = useState([]);
+  const [sessions, setSessions] = useState([]);
+  const [trainingPlan, setTrainingPlan] = useState([]);
+  const [trainingTypes, setTrainingTypes] = useState(DEFAULT_TRAINING_TYPES);
+  const [currentView, setCurrentView] = useState('home');
+  const [activeSession, setActiveSession] = useState(null);
+  const [activeExercise, setActiveExercise] = useState(null);
+  const [sessionHistory, setSessionHistory] = useState([]);
+  
+  // Load data from localStorage
+  useEffect(() => {
+    const savedExercises = localStorage.getItem('exercises');
+    const savedSessions = localStorage.getItem('sessions');
+    const savedPlan = localStorage.getItem('trainingPlan');
+    const savedTypes = localStorage.getItem('trainingTypes');
+    const savedHistory = localStorage.getItem('sessionHistory');
     
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#1f2937">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="ClimbTraining">
+    if (savedExercises) setExercises(JSON.parse(savedExercises));
+    if (savedSessions) setSessions(JSON.parse(savedSessions));
+    if (savedPlan) setTrainingPlan(JSON.parse(savedPlan));
+    if (savedTypes) setTrainingTypes(JSON.parse(savedTypes));
+    if (savedHistory) setSessionHistory(JSON.parse(savedHistory));
+  }, []);
+  
+  // Save data to localStorage
+  useEffect(() => {
+    localStorage.setItem('exercises', JSON.stringify(exercises));
+  }, [exercises]);
+  
+  useEffect(() => {
+    localStorage.setItem('sessions', JSON.stringify(sessions));
+  }, [sessions]);
+  
+  useEffect(() => {
+    localStorage.setItem('trainingPlan', JSON.stringify(trainingPlan));
+  }, [trainingPlan]);
+  
+  useEffect(() => {
+    localStorage.setItem('trainingTypes', JSON.stringify(trainingTypes));
+  }, [trainingTypes]);
+  
+  useEffect(() => {
+    localStorage.setItem('sessionHistory', JSON.stringify(sessionHistory));
+  }, [sessionHistory]);
+  
+  // Navigation component
+  const Navigation = () => (
+    <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700">
+      <div className="flex justify-around py-2">
+        <button
+          onClick={() => setCurrentView('home')}
+          className={`flex flex-col items-center p-2 ${currentView === 'home' ? 'text-blue-400' : 'text-gray-400'}`}
+        >
+          <Menu size={24} />
+          <span className="text-xs mt-1">Home</span>
+        </button>
+        <button
+          onClick={() => setCurrentView('exercises')}
+          className={`flex flex-col items-center p-2 ${currentView === 'exercises' ? 'text-blue-400' : 'text-gray-400'}`}
+        >
+          <Dumbbell size={24} />
+          <span className="text-xs mt-1">Übungen</span>
+        </button>
+        <button
+          onClick={() => setCurrentView('sessions')}
+          className={`flex flex-col items-center p-2 ${currentView === 'sessions' ? 'text-blue-400' : 'text-gray-400'}`}
+        >
+          <Calendar size={24} />
+          <span className="text-xs mt-1">Einheiten</span>
+        </button>
+        <button
+          onClick={() => setCurrentView('plan')}
+          className={`flex flex-col items-center p-2 ${currentView === 'plan' ? 'text-blue-400' : 'text-gray-400'}`}
+        >
+          <BarChart size={24} />
+          <span className="text-xs mt-1">Plan</span>
+        </button>
+        <button
+          onClick={() => setCurrentView('settings')}
+          className={`flex flex-col items-center p-2 ${currentView === 'settings' ? 'text-blue-400' : 'text-gray-400'}`}
+        >
+          <Settings size={24} />
+          <span className="text-xs mt-1">Settings</span>
+        </button>
+      </div>
+    </div>
+  );
+  
+  // Exercise Form Component
+  const ExerciseForm = ({ exercise, onSave, onCancel }) => {
+    const [name, setName] = useState(exercise?.name || '');
+    const [type, setType] = useState(exercise?.type || 'reps');
+    const [sets, setSets] = useState(exercise?.sets || 3);
+    const [repsOrTime, setRepsOrTime] = useState(exercise?.repsOrTime || 10);
+    const [restTime, setRestTime] = useState(exercise?.restTime || 60);
     
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      onSave({
+        id: exercise?.id || generateId(),
+        name,
+        type,
+        sets,
+        repsOrTime,
+        restTime
+      });
+    };
+    
+    return (
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="text"
+          placeholder="Übungsname"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full p-3 bg-gray-700 rounded-lg text-white"
+          required
+        />
         
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #111827;
-            color: white;
-            overflow-x: hidden;
-            user-select: none;
-        }
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setType('reps')}
+            className={`flex-1 p-3 rounded-lg ${type === 'reps' ? 'bg-blue-600' : 'bg-gray-700'}`}
+          >
+            Wiederholungen
+          </button>
+          <button
+            type="button"
+            onClick={() => setType('time')}
+            className={`flex-1 p-3 rounded-lg ${type === 'time' ? 'bg-blue-600' : 'bg-gray-700'}`}
+          >
+            Zeit
+          </button>
+        </div>
         
-        /* Layout utilities */
-        .flex { display: flex; }
-        .flex-col { flex-direction: column; }
-        .items-center { align-items: center; }
-        .justify-between { justify-content: space-between; }
-        .justify-around { justify-content: space-around; }
-        .space-y-3 > * + * { margin-top: 0.75rem; }
-        .space-y-4 > * + * { margin-top: 1rem; }
-        .space-y-6 > * + * { margin-top: 1.5rem; }
-        .space-x-2 > * + * { margin-left: 0.5rem; }
-        .space-x-3 > * + * { margin-left: 0.75rem; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .w-full { width: 100%; }
-        .flex-1 { flex: 1; }
-        .text-center { text-align: center; }
-        .hidden { display: none; }
+        <div className="grid grid-cols-3 gap-2">
+          <div>
+            <label className="text-sm text-gray-400">Sätze</label>
+            <input
+              type="number"
+              value={sets}
+              onChange={(e) => setSets(parseInt(e.target.value))}
+              className="w-full p-3 bg-gray-700 rounded-lg text-white"
+              min="1"
+              required
+            />
+          </div>
+          <div>
+            <label className="text-sm text-gray-400">{type === 'reps' ? 'Wiederholungen' : 'Sekunden'}</label>
+            <input
+              type="number"
+              value={repsOrTime}
+              onChange={(e) => setRepsOrTime(parseInt(e.target.value))}
+              className="w-full p-3 bg-gray-700 rounded-lg text-white"
+              min="1"
+              required
+            />
+          </div>
+          <div>
+            <label className="text-sm text-gray-400">Pause (s)</label>
+            <input
+              type="number"
+              value={restTime}
+              onChange={(e) => setRestTime(parseInt(e.target.value))}
+              className="w-full p-3 bg-gray-700 rounded-lg text-white"
+              min="0"
+              required
+            />
+          </div>
+        </div>
         
-        /* Typography */
-        .font-bold { font-weight: 700; }
-        .font-medium { font-weight: 500; }
-        .font-mono { font-family: monospace; }
-        .text-xs { font-size: 0.75rem; }
-        .text-sm { font-size: 0.875rem; }
-        .text-lg { font-size: 1.125rem; }
-        .text-xl { font-size: 1.25rem; }
-        .text-2xl { font-size: 1.5rem; }
-        .text-3xl { font-size: 1.875rem; }
-        .text-4xl { font-size: 2.25rem; }
-        .text-8xl { font-size: 6rem; }
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            className="flex-1 bg-blue-600 p-3 rounded-lg font-medium"
+          >
+            Speichern
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 bg-gray-700 p-3 rounded-lg font-medium"
+          >
+            Abbrechen
+          </button>
+        </div>
+      </form>
+    );
+  };
+  
+  // Exercises View
+  const ExercisesView = () => {
+    const [showForm, setShowForm] = useState(false);
+    const [editingExercise, setEditingExercise] = useState(null);
+    
+    const handleSave = (exercise) => {
+      if (editingExercise) {
+        setExercises(exercises.map(e => e.id === exercise.id ? exercise : e));
+      } else {
+        setExercises([...exercises, exercise]);
+      }
+      setShowForm(false);
+      setEditingExercise(null);
+    };
+    
+    const handleDelete = (id) => {
+      setExercises(exercises.filter(e => e.id !== id));
+    };
+    
+    return (
+      <div className="pb-20">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Übungen</h2>
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-blue-600 p-2 rounded-lg"
+          >
+            <Plus size={24} />
+          </button>
+        </div>
         
-        /* Colors */
-        .text-gray-400 { color: #9ca3af; }
-        .text-gray-300 { color: #d1d5db; }
-        .text-orange-400 { color: #fb923c; }
-        .text-orange-600 { color: #ea580c; }
-        .text-green-400 { color: #4ade80; }
-        .text-red-400 { color: #f87171; }
-        .bg-gray-800 { background: #1f2937; }
-        .bg-gray-700 { background: #374151; }
-        .bg-gray-600 { background: #4b5563; }
-        .bg-orange-500 { background: #f97316; }
-        .bg-green-500 { background: #10b981; }
-        .bg-red-500 { background: #ef4444; }
-        .bg-yellow-500 { background: #eab308; }
-        .bg-gradient { background: linear-gradient(to right, #f97316, #ef4444); }
+        {showForm && (
+          <div className="mb-6 bg-gray-800 p-4 rounded-lg">
+            <ExerciseForm
+              exercise={editingExercise}
+              onSave={handleSave}
+              onCancel={() => {
+                setShowForm(false);
+                setEditingExercise(null);
+              }}
+            />
+          </div>
+        )}
         
-        /* Layout components */
-        .container { padding: 1.5rem; padding-bottom: 6rem; min-height: 100vh; }
-        .card { background: #1f2937; padding: 1rem; border-radius: 1rem; margin-bottom: 0.75rem; }
-        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #111827; padding: 0.5rem; }
+        <div className="space-y-2">
+          {exercises.map(exercise => (
+            <div key={exercise.id} className="bg-gray-800 p-4 rounded-lg flex justify-between items-center">
+              <div>
+                <h3 className="font-medium">{exercise.name}</h3>
+                <p className="text-sm text-gray-400">
+                  {exercise.sets} × {exercise.repsOrTime} {exercise.type === 'reps' ? 'Wdh' : 'Sek'} • {exercise.restTime}s Pause
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setEditingExercise(exercise);
+                    setShowForm(true);
+                  }}
+                  className="text-blue-400"
+                >
+                  <Edit2 size={20} />
+                </button>
+                <button
+                  onClick={() => handleDelete(exercise.id)}
+                  className="text-red-400"
+                >
+                  <Trash2 size={20} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+  
+  // Session Form Component
+  const SessionForm = ({ session, onSave, onCancel }) => {
+    const [name, setName] = useState(session?.name || '');
+    const [trainingType, setTrainingType] = useState(session?.trainingType || trainingTypes[0]);
+    const [selectedExercises, setSelectedExercises] = useState(session?.exercises || []);
+    
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      onSave({
+        id: session?.id || generateId(),
+        name,
+        trainingType,
+        exercises: selectedExercises
+      });
+    };
+    
+    const toggleExercise = (exerciseId) => {
+      if (selectedExercises.includes(exerciseId)) {
+        setSelectedExercises(selectedExercises.filter(id => id !== exerciseId));
+      } else {
+        setSelectedExercises([...selectedExercises, exerciseId]);
+      }
+    };
+    
+    return (
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="text"
+          placeholder="Name der Trainingseinheit"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full p-3 bg-gray-700 rounded-lg text-white"
+          required
+        />
         
-        /* Buttons */
-        .btn { padding: 0.75rem 1.5rem; border-radius: 0.75rem; border: none; font-weight: 700; cursor: pointer; transition: all 0.2s; }
-        .btn-primary { background: #f97316; color: white; }
-        .btn-primary:hover { background: #ea580c; }
-        .btn-secondary { background: #374151; color: white; }
-        .btn-danger { background: #ef4444; color: white; }
-        .btn-success { background: #10b981; color: white; }
-        .btn-large { padding: 1.5rem; font-size: 1.25rem; }
-        .btn-round { width: 3rem; height: 3rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        <select
+          value={trainingType}
+          onChange={(e) => setTrainingType(e.target.value)}
+          className="w-full p-3 bg-gray-700 rounded-lg text-white"
+        >
+          {trainingTypes.map(type => (
+            <option key={type} value={type}>{type}</option>
+          ))}
+        </select>
         
-        /* Forms */
-        .input { width: 100%; padding: 1rem; background: #1f2937; border: 1px solid #374151; border-radius: 0.75rem; color: white; font-size: 16px; }
-        .input:focus { outline: none; border-color: #f97316; }
+        <div className="space-y-2">
+          <p className="text-sm text-gray-400">Übungen auswählen:</p>
+          {exercises.map(exercise => (
+            <label key={exercise.id} className="flex items-center p-3 bg-gray-700 rounded-lg cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedExercises.includes(exercise.id)}
+                onChange={() => toggleExercise(exercise.id)}
+                className="mr-3"
+              />
+              <span>{exercise.name}</span>
+            </label>
+          ))}
+        </div>
         
-        /* Navigation */
-        .nav-btn { 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 0.75rem; 
-            border-radius: 0.5rem; 
-            background: none; 
-            border: none; 
-            color: #6b7280; 
-            cursor: pointer; 
-            transition: color 0.2s; 
-        }
-        .nav-btn.active { color: #f97316; }
-        .nav-btn:hover { color: #fb923c; }
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            className="flex-1 bg-blue-600 p-3 rounded-lg font-medium"
+          >
+            Speichern
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 bg-gray-700 p-3 rounded-lg font-medium"
+          >
+            Abbrechen
+          </button>
+        </div>
+      </form>
+    );
+  };
+  
+  // Sessions View
+  const SessionsView = () => {
+    const [showForm, setShowForm] = useState(false);
+    const [editingSession, setEditingSession] = useState(null);
+    
+    const handleSave = (session) => {
+      if (editingSession) {
+        setSessions(sessions.map(s => s.id === session.id ? session : s));
+      } else {
+        setSessions([...sessions, session]);
+      }
+      setShowForm(false);
+      setEditingSession(null);
+    };
+    
+    const handleDelete = (id) => {
+      setSessions(sessions.filter(s => s.id !== id));
+      setTrainingPlan(trainingPlan.filter(sid => sid !== id));
+    };
+    
+    return (
+      <div className="pb-20">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Trainingseinheiten</h2>
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-blue-600 p-2 rounded-lg"
+          >
+            <Plus size={24} />
+          </button>
+        </div>
         
-        /* Special displays */
-        .timer-display { 
-            font-size: 6rem; 
-            font-family: monospace; 
-            font-weight: bold; 
-            text-align: center; 
-            margin: 2rem 0; 
-            color: white;
-        }
-        .set-counter { 
-            font-size: 2rem; 
-            font-weight: bold; 
-            text-align: center; 
-            color: #f97316; 
-            margin-bottom: 1rem; 
-        }
+        {showForm && (
+          <div className="mb-6 bg-gray-800 p-4 rounded-lg">
+            <SessionForm
+              session={editingSession}
+              onSave={handleSave}
+              onCancel={() => {
+                setShowForm(false);
+                setEditingSession(null);
+              }}
+            />
+          </div>
+        )}
         
-        /* Overlay */
-        .overlay { 
-            position: fixed; 
-            top: 0; left: 0; right: 0; bottom: 0; 
-            background: rgba(0,0,0,0.8); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            z-index: 1000; 
-        }
-        .overlay-content { 
-            background: #1f2937; 
-            padding: 2rem; 
-            border-radius: 1rem; 
-            text-align: center; 
-            max-width: 90vw; 
-        }
+        <div className="space-y-2">
+          {sessions.map(session => (
+            <div key={session.id} className="bg-gray-800 p-4 rounded-lg">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-medium">{session.name}</h3>
+                  <p className="text-sm text-gray-400">{session.trainingType} • {session.exercises.length} Übungen</p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setEditingSession(session);
+                      setShowForm(true);
+                    }}
+                    className="text-blue-400"
+                  >
+                    <Edit2 size={20} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(session.id)}
+                    className="text-red-400"
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+  
+  // Training Plan View
+  const TrainingPlanView = () => {
+    const [draggedIndex, setDraggedIndex] = useState(null);
+    
+    const handleDragStart = (index) => {
+      setDraggedIndex(index);
+    };
+    
+    const handleDragOver = (e) => {
+      e.preventDefault();
+    };
+    
+    const handleDrop = (e, dropIndex) => {
+      e.preventDefault();
+      if (draggedIndex === null) return;
+      
+      const newPlan = [...trainingPlan];
+      const [draggedItem] = newPlan.splice(draggedIndex, 1);
+      newPlan.splice(dropIndex, 0, draggedItem);
+      setTrainingPlan(newPlan);
+      setDraggedIndex(null);
+    };
+    
+    const addToPlan = (sessionId) => {
+      setTrainingPlan([...trainingPlan, sessionId]);
+    };
+    
+    const removeFromPlan = (index) => {
+      setTrainingPlan(trainingPlan.filter((_, i) => i !== index));
+    };
+    
+    return (
+      <div className="pb-20">
+        <h2 className="text-2xl font-bold mb-6">Trainingsplan</h2>
         
-        /* Icons using emoji for speed */
-        .icon-home::before { content: "🏠"; font-size: 1.5rem; }
-        .icon-dumbbell::before { content: "💪"; font-size: 1.5rem; }
-        .icon-play::before { content: "▶️"; font-size: 1.5rem; }
-        .icon-calendar::before { content: "📅"; font-size: 1.5rem; }
-        .icon-plus::before { content: "+"; font-size: 1.5rem; font-weight: bold; }
-        .icon-back::before { content: "←"; font-size: 1.5rem; }
-        .icon-edit::before { content: "✏️"; font-size: 1rem; }
-        .icon-delete::before { content: "🗑️"; font-size: 1rem; }
-        .icon-check::before { content: "✅"; font-size: 1.5rem; }
-        .icon-x::before { content: "❌"; font-size: 1rem; }
-        .icon-reset::before { content: "↻"; font-size: 1.5rem; }
-        
-        /* Utilities */
-        .mb-1 { margin-bottom: 0.25rem; }
-        .mb-2 { margin-bottom: 0.5rem; }
-        .mb-3 { margin-bottom: 0.75rem; }
-        .mb-4 { margin-bottom: 1rem; }
-        .mb-6 { margin-bottom: 1.5rem; }
-        .mb-8 { margin-bottom: 2rem; }
-        .mt-1 { margin-top: 0.25rem; }
-        .mt-4 { margin-top: 1rem; }
-        .mr-2 { margin-right: 0.5rem; }
-        .mr-4 { margin-right: 1rem; }
-        .p-4 { padding: 1rem; }
-        .p-6 { padding: 1.5rem; }
-        .px-4 { padding-left: 1rem; padding-right: 1rem; }
-        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
-        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
-        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
-        
-        /* Drag and drop */
-        .draggable { cursor: move; }
-        .draggable:hover { background: #374151; }
-        
-        /* Difficulty buttons */
-        .diff-easy { background: linear-gradient(to right, #10b981, #059669); }
-        .diff-moderate { background: linear-gradient(to right, #eab308, #ca8a04); }
-        .diff-hard { background: linear-gradient(to right, #f97316, #ea580c); }
-        .diff-very-hard { background: linear-gradient(to right, #ef4444, #dc2626); }
-        
-        /* Responsive adjustments */
-        @media (max-width: 480px) {
-            .timer-display { font-size: 4rem; }
-            .container { padding: 1rem; padding-bottom: 5rem; }
-        }
-    </style>
-</head>
-<body>
-    <div id="app"></div>
-
-    <script>
-        class ClimbingApp {
-            constructor() {
-                this.state = {
-                    currentView: 'home',
-                    exercises: JSON.parse(localStorage.getItem('exercises') || '[]'),
-                    workouts: JSON.parse(localStorage.getItem('workouts') || '[]'),
-                    trainingPlans: JSON.parse(localStorage.getItem('trainingPlans') || '[]'),
-                    currentWorkout: null,
-                    currentExercise: null,
-                    currentPlan: JSON.parse(localStorage.getItem('currentPlan') || 'null'),
-                    timer: 0,
-                    isTimerRunning: false,
-                    currentSet: 1,
-                    currentRep: 0,
-                    restTimer: 0,
-                    isRestTimerRunning: false,
-                    showRestTimer: false,
-                    stretchingExercises: [],
-                    currentStretching: null,
-                    replacementIndex: null,
-                    exerciseForm: { name: '', type: 'reps', sets: 3, reps: 10, duration: 30, restTime: 60 },
-                    workoutForm: { name: '', type: 'Strength', exercises: [] },
-                    planForm: { name: '', workouts: [] },
-                    stretchForm: { name: '', duration: 30 }
-                };
+        <div className="mb-6">
+          <h3 className="text-lg font-medium mb-3">Plan-Reihenfolge:</h3>
+          {trainingPlan.length === 0 ? (
+            <p className="text-gray-400">Noch keine Einheiten im Plan</p>
+          ) : (
+            <div className="space-y-2">
+              {trainingPlan.map((sessionId, index) => {
+                const session = sessions.find(s => s.id === sessionId);
+                if (!session) return null;
                 
-                this.trainingTypes = ['Strength', 'Power', 'Projecting', 'Power Endurance', 'Endurance'];
-                this.difficultyLevels = ['Easy', 'Moderate', 'Hard', 'Very Hard'];
-                
-                this.init();
-            }
-            
-            init() {
-                this.render();
-                this.startTimers();
-            }
-            
-            setState(newState) {
-                Object.assign(this.state, newState);
-                this.saveToStorage();
-                this.render();
-            }
-            
-            saveToStorage() {
-                ['exercises', 'workouts', 'trainingPlans', 'currentPlan'].forEach(key => {
-                    if (this.state[key] !== null) {
-                        localStorage.setItem(key, JSON.stringify(this.state[key]));
-                    }
-                });
-            }
-            
-            formatTime(seconds) {
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            }
-            
-            startTimers() {
-                setInterval(() => {
-                    if (this.state.isTimerRunning) {
-                        this.setState({ timer: this.state.timer + 1 });
-                    }
-                    if (this.state.isRestTimerRunning) {
-                        if (this.state.restTimer <= 1) {
-                            this.setState({ 
-                                isRestTimerRunning: false, 
-                                showRestTimer: false, 
-                                restTimer: 0 
-                            });
-                        } else {
-                            this.setState({ restTimer: this.state.restTimer - 1 });
-                        }
-                    }
-                }, 1000);
-            }
-            
-            // Exercise Management
-            addExercise() {
-                if (!this.state.exerciseForm.name) return;
-                const newExercise = { id: Date.now(), ...this.state.exerciseForm };
-                this.setState({
-                    exercises: [...this.state.exercises, newExercise],
-                    exerciseForm: { name: '', type: 'reps', sets: 3, reps: 10, duration: 30, restTime: 60 },
-                    currentView: 'exercises'
-                });
-            }
-            
-            deleteExercise(id) {
-                this.setState({ exercises: this.state.exercises.filter(ex => ex.id !== id) });
-            }
-            
-            // Workout Management
-            addWorkout() {
-                if (!this.state.workoutForm.name) return;
-                const newWorkout = { id: Date.now(), ...this.state.workoutForm, exercises: [...this.state.workoutForm.exercises] };
-                this.setState({
-                    workouts: [...this.state.workouts, newWorkout],
-                    workoutForm: { name: '', type: 'Strength', exercises: [] },
-                    currentView: 'workouts'
-                });
-            }
-            
-            startWorkout(workout) {
-                this.setState({
-                    currentWorkout: {
-                        ...workout,
-                        exerciseProgress: workout.exercises.map(() => ({ currentSet: 1, completed: false }))
-                    },
-                    currentView: 'workout-overview'
-                });
-            }
-            
-            // Plan Management
-            addPlan() {
-                if (!this.state.planForm.name || this.state.planForm.workouts.length === 0) return;
-                const newPlan = { id: Date.now(), ...this.state.planForm, workouts: [...this.state.planForm.workouts], currentWorkoutIndex: 0 };
-                this.setState({
-                    trainingPlans: [...this.state.trainingPlans, newPlan],
-                    planForm: { name: '', workouts: [] },
-                    currentView: 'plans'
-                });
-            }
-            
-            startWorkoutFromPlan(workoutIndex) {
-                const workout = this.state.currentPlan.workouts[workoutIndex];
-                this.setState({
-                    currentWorkout: {
-                        ...workout,
-                        exerciseProgress: workout.exercises.map(() => ({ currentSet: 1, completed: false })),
-                        fromPlan: true,
-                        planWorkoutIndex: workoutIndex
-                    },
-                    currentView: 'workout-overview'
-                });
-            }
-            
-            // Exercise Execution
-            startExercise(exerciseIndex) {
-                const exercise = this.state.currentWorkout.exercises[exerciseIndex];
-                this.setState({
-                    currentExercise: { ...exercise, index: exerciseIndex },
-                    currentSet: 1,
-                    currentRep: 0,
-                    timer: 0,
-                    isTimerRunning: false,
-                    currentView: 'exercise-execution'
-                });
-            }
-            
-            completeSet() {
-                if (this.state.currentSet < this.state.currentExercise.sets) {
-                    this.setState({
-                        currentSet: this.state.currentSet + 1,
-                        currentRep: 0,
-                        timer: 0,
-                        isTimerRunning: false,
-                        restTimer: this.state.currentExercise.restTime,
-                        isRestTimerRunning: true,
-                        showRestTimer: true
-                    });
-                } else {
-                    this.setState({ isTimerRunning: false, currentView: 'difficulty-rating' });
-                }
-            }
-            
-            rateDifficulty(difficulty) {
-                const updatedWorkout = { ...this.state.currentWorkout };
-                updatedWorkout.exerciseProgress[this.state.currentExercise.index].completed = true;
-                this.setState({ currentWorkout: updatedWorkout, currentView: 'workout-overview' });
-            }
-            
-            completeWorkout() {
-                if (this.state.currentWorkout?.fromPlan) {
-                    const updatedPlan = { ...this.state.currentPlan };
-                    if (this.state.currentWorkout.planWorkoutIndex < this.state.currentPlan.workouts.length - 1) {
-                        updatedPlan.currentWorkoutIndex = this.state.currentWorkout.planWorkoutIndex + 1;
-                    }
-                    this.setState({ currentPlan: updatedPlan });
-                    this.setState({ trainingPlans: this.state.trainingPlans.map(plan => plan.id === updatedPlan.id ? updatedPlan : plan) });
-                }
-                this.setState({ currentView: 'add-stretching' });
-            }
-            
-            // Stretching
-            addStretchingExercise() {
-                if (!this.state.stretchForm.name) return;
-                const newStretching = { id: Date.now(), name: this.state.stretchForm.name, duration: this.state.stretchForm.duration, sets: 2 };
-                this.setState({
-                    stretchingExercises: [...this.state.stretchingExercises, newStretching],
-                    stretchForm: { name: '', duration: 30 }
-                });
-            }
-            
-            startStretching(stretchExercise) {
-                this.setState({
-                    currentStretching: { ...stretchExercise, currentSet: 1 },
-                    timer: 0,
-                    currentView: 'stretching-execution'
-                });
-            }
-            
-            completeStretchingSet() {
-                if (this.state.currentStretching.currentSet < this.state.currentStretching.sets) {
-                    this.setState({
-                        currentStretching: { ...this.state.currentStretching, currentSet: this.state.currentStretching.currentSet + 1 },
-                        timer: 0,
-                        isTimerRunning: false,
-                        restTimer: 10,
-                        isRestTimerRunning: true,
-                        showRestTimer: true
-                    });
-                } else {
-                    this.setState({ currentView: 'add-stretching' });
-                }
-            }
-            
-            finishWorkout() {
-                // Add to simple history (just workout name and date)
-                const historyEntry = {
-                    workoutName: this.state.currentWorkout?.name || 'Training',
-                    workoutType: this.state.currentWorkout?.type || '',
-                    completedAt: new Date().toISOString(),
-                    exerciseCount: this.state.currentWorkout?.exercises?.length || 0
-                };
-                
-                let history = JSON.parse(localStorage.getItem('workoutHistory') || '[]');
-                
-                // Clean old entries (older than 6 weeks)
-                const sixWeeksAgo = new Date();
-                sixWeeksAgo.setDate(sixWeeksAgo.getDate() - 42);
-                history = history.filter(entry => new Date(entry.completedAt) > sixWeeksAgo);
-                
-                // Add new entry
-                history.push(historyEntry);
-                localStorage.setItem('workoutHistory', JSON.stringify(history));
-                
-                this.setState({
-                    currentWorkout: null,
-                    currentExercise: null,
-                    stretchingExercises: [],
-                    currentView: 'workout-complete'
-                });
-                
-                setTimeout(() => this.setState({ currentView: 'home' }), 2000);
-            }
-            
-            // Drag and drop for exercises
-            moveExercise(fromIndex, toIndex) {
-                const updatedWorkout = { ...this.state.currentWorkout };
-                const exercises = [...updatedWorkout.exercises];
-                const progress = [...updatedWorkout.exerciseProgress];
-                
-                [exercises[fromIndex], exercises[toIndex]] = [exercises[toIndex], exercises[fromIndex]];
-                [progress[fromIndex], progress[toIndex]] = [progress[toIndex], progress[fromIndex]];
-                
-                updatedWorkout.exercises = exercises;
-                updatedWorkout.exerciseProgress = progress;
-                this.setState({ currentWorkout: updatedWorkout });
-            }
-            
-            // Replace exercise
-            replaceExercise(index, newExercise) {
-                const updatedWorkout = { ...this.state.currentWorkout };
-                updatedWorkout.exercises[index] = newExercise;
-                updatedWorkout.exerciseProgress[index] = { currentSet: 1, completed: false };
-                this.setState({ currentWorkout: updatedWorkout, replacementIndex: null, currentView: 'workout-overview' });
-            }
-            
-            // Form handlers
-            updateForm(form, field, value) {
-                this.setState({ [form]: { ...this.state[form], [field]: value } });
-            }
-            
-            addExerciseToWorkout(exercise) {
-                if (!this.state.workoutForm.exercises.find(ex => ex.id === exercise.id)) {
-                    this.setState({
-                        workoutForm: { ...this.state.workoutForm, exercises: [...this.state.workoutForm.exercises, exercise] }
-                    });
-                }
-            }
-            
-            removeExerciseFromWorkout(index) {
-                this.setState({
-                    workoutForm: {
-                        ...this.state.workoutForm,
-                        exercises: this.state.workoutForm.exercises.filter((_, i) => i !== index)
-                    }
-                });
-            }
-            
-            addWorkoutToPlan(workout) {
-                if (!this.state.planForm.workouts.find(w => w.id === workout.id)) {
-                    this.setState({
-                        planForm: { ...this.state.planForm, workouts: [...this.state.planForm.workouts, workout] }
-                    });
-                }
-            }
-            
-            removeWorkoutFromPlan(index) {
-                this.setState({
-                    planForm: {
-                        ...this.state.planForm,
-                        workouts: this.state.planForm.workouts.filter((_, i) => i !== index)
-                    }
-                });
-            }
-            
-            renderExercises() {
-                return `
-                    <div class="container">
-                        <div class="flex justify-between items-center mb-6">
-                            <h1 class="text-2xl font-bold">Übungen</h1>
-                            <button onclick="app.setState({currentView: 'add-exercise'})" class="btn-round btn-primary">
-                                <span class="icon-plus"></span>
-                            </button>
-                        </div>
-
-                        <div class="space-y-3">
-                            ${this.state.exercises.map(exercise => `
-                                <div class="card">
-                                    <div class="flex justify-between items-start">
-                                        <div class="flex-1">
-                                            <h3 class="font-bold text-lg">${exercise.name}</h3>
-                                            <p class="text-gray-400 mt-1">
-                                                ${exercise.sets} Sätze × ${exercise.type === 'reps' ? `${exercise.reps} Wdh.` : `${exercise.duration}s`}
-                                            </p>
-                                            <p class="text-sm text-gray-400">Pause: ${exercise.restTime}s</p>
-                                        </div>
-                                        <div class="flex space-x-2">
-                                            <button onclick="app.deleteExercise(${exercise.id})" class="text-red-400">
-                                                <span class="icon-delete"></span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('') || `
-                                <div class="text-center py-12">
-                                    <p class="text-gray-400 mb-4">Noch keine Übungen erstellt</p>
-                                    <button onclick="app.setState({currentView: 'add-exercise'})" class="btn btn-primary">
-                                        Erste Übung hinzufügen
-                                    </button>
-                                </div>
-                            `}
-                        </div>
+                return (
+                  <div
+                    key={index}
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, index)}
+                    className="bg-gray-800 p-4 rounded-lg flex items-center gap-3 cursor-move"
+                  >
+                    <GripVertical size={20} className="text-gray-500" />
+                    <div className="flex-1">
+                      <h4 className="font-medium">{session.name}</h4>
+                      <p className="text-sm text-gray-400">{session.trainingType}</p>
                     </div>
-                `;
+                    <button
+                      onClick={() => removeFromPlan(index)}
+                      className="text-red-400"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+        
+        <div>
+          <h3 className="text-lg font-medium mb-3">Verfügbare Einheiten:</h3>
+          <div className="space-y-2">
+            {sessions.map(session => (
+              <div key={session.id} className="bg-gray-700 p-3 rounded-lg flex justify-between items-center">
+                <span>{session.name}</span>
+                <button
+                  onClick={() => addToPlan(session.id)}
+                  className="bg-blue-600 p-2 rounded"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  // Settings View
+  const SettingsView = () => {
+    const [newType, setNewType] = useState('');
+    
+    const addTrainingType = () => {
+      if (newType && !trainingTypes.includes(newType)) {
+        setTrainingTypes([...trainingTypes, newType]);
+        setNewType('');
+      }
+    };
+    
+    const removeTrainingType = (type) => {
+      if (!DEFAULT_TRAINING_TYPES.includes(type)) {
+        setTrainingTypes(trainingTypes.filter(t => t !== type));
+      }
+    };
+    
+    return (
+      <div className="pb-20">
+        <h2 className="text-2xl font-bold mb-6">Einstellungen</h2>
+        
+        <div className="bg-gray-800 p-4 rounded-lg">
+          <h3 className="text-lg font-medium mb-4">Trainingstypen</h3>
+          
+          <div className="flex gap-2 mb-4">
+            <input
+              type="text"
+              placeholder="Neuer Trainingstyp"
+              value={newType}
+              onChange={(e) => setNewType(e.target.value)}
+              className="flex-1 p-2 bg-gray-700 rounded"
+            />
+            <button
+              onClick={addTrainingType}
+              className="bg-blue-600 p-2 rounded"
+            >
+              <Plus size={20} />
+            </button>
+          </div>
+          
+          <div className="space-y-2">
+            {trainingTypes.map(type => (
+              <div key={type} className="flex justify-between items-center p-2 bg-gray-700 rounded">
+                <span>{type}</span>
+                {!DEFAULT_TRAINING_TYPES.includes(type) && (
+                  <button
+                    onClick={() => removeTrainingType(type)}
+                    className="text-red-400"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  // Timer Component
+  const Timer = ({ duration, onComplete }) => {
+    const [timeLeft, setTimeLeft] = useState(duration);
+    const [isRunning, setIsRunning] = useState(false);
+    
+    useEffect(() => {
+      let interval;
+      if (isRunning && timeLeft > 0) {
+        interval = setInterval(() => {
+          setTimeLeft(t => {
+            if (t <= 1) {
+              setIsRunning(false);
+              onComplete();
+              return duration;
             }
+            return t - 1;
+          });
+        }, 1000);
+      }
+      return () => clearInterval(interval);
+    }, [isRunning, timeLeft, duration, onComplete]);
+    
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    
+    return (
+      <div className="text-center">
+        <div className="text-6xl font-mono mb-4">
+          {minutes}:{seconds.toString().padStart(2, '0')}
+        </div>
+        <div className="flex gap-4 justify-center">
+          <button
+            onClick={() => setIsRunning(!isRunning)}
+            className="bg-blue-600 p-4 rounded-full"
+          >
+            {isRunning ? <Pause size={24} /> : <Play size={24} />}
+          </button>
+          <button
+            onClick={() => {
+              setIsRunning(false);
+              setTimeLeft(duration);
+            }}
+            className="bg-gray-700 p-4 rounded-full"
+          >
+            <RotateCcw size={24} />
+          </button>
+        </div>
+      </div>
+    );
+  };
+  
+  // Exercise Execution View
+  const ExerciseExecution = ({ exercise, onComplete, onBack }) => {
+    const [currentSet, setCurrentSet] = useState(1);
+    const [isResting, setIsResting] = useState(false);
+    const [difficulty, setDifficulty] = useState(null);
+    const [timeLeft, setTimeLeft] = useState(exercise.type === 'time' ? exercise.repsOrTime : 0);
+    const [isTimerRunning, setIsTimerRunning] = useState(false);
+    
+    useEffect(() => {
+      let interval;
+      if (isTimerRunning && timeLeft > 0) {
+        interval = setInterval(() => {
+          setTimeLeft(t => t - 1);
+        }, 1000);
+      } else if (timeLeft === 0 && isTimerRunning) {
+        setIsTimerRunning(false);
+      }
+      return () => clearInterval(interval);
+    }, [isTimerRunning, timeLeft]);
+    
+    const handleSetComplete = () => {
+      if (currentSet < exercise.sets) {
+        setIsResting(true);
+      } else {
+        // Show difficulty selection
+        setIsResting(false);
+      }
+    };
+    
+    const handleRestComplete = () => {
+      setIsResting(false);
+      setCurrentSet(currentSet + 1);
+      if (exercise.type === 'time') {
+        setTimeLeft(exercise.repsOrTime);
+      }
+    };
+    
+    const handleDifficultySelect = (level) => {
+      setDifficulty(level);
+      onComplete(level);
+    };
+    
+    if (difficulty === null && currentSet === exercise.sets && !isResting) {
+      return (
+        <div className="h-full flex flex-col items-center justify-center p-6">
+          <h3 className="text-2xl font-bold mb-8">Wie war die Übung?</h3>
+          <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
+            <button
+              onClick={() => handleDifficultySelect('easy')}
+              className="bg-green-600 p-6 rounded-lg text-lg font-medium"
+            >
+              Easy
+            </button>
+            <button
+              onClick={() => handleDifficultySelect('moderate')}
+              className="bg-yellow-600 p-6 rounded-lg text-lg font-medium"
+            >
+              Moderate
+            </button>
+            <button
+              onClick={() => handleDifficultySelect('hard')}
+              className="bg-orange-600 p-6 rounded-lg text-lg font-medium"
+            >
+              Hard
+            </button>
+            <button
+              onClick={() => handleDifficultySelect('very hard')}
+              className="bg-red-600 p-6 rounded-lg text-lg font-medium"
+            >
+              Very Hard
+            </button>
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="h-full flex flex-col">
+        <div className="flex items-center gap-4 p-4 bg-gray-800">
+          <button onClick={onBack} className="text-gray-400">
+            <ArrowLeft size={24} />
+          </button>
+          <h2 className="text-xl font-bold flex-1">{exercise.name}</h2>
+        </div>
+        
+        <div className="flex-1 flex flex-col items-center justify-center p-6">
+          {isResting ? (
+            <>
+              <h3 className="text-2xl mb-8">Pause</h3>
+              <Timer duration={exercise.restTime} onComplete={handleRestComplete} />
+            </>
+          ) : (
+            <>
+              <div className="text-center mb-8">
+                <h3 className="text-4xl font-bold mb-2">Satz {currentSet} / {exercise.sets}</h3>
+                <p className="text-xl text-gray-400">
+                  {exercise.type === 'reps' ? `${exercise.repsOrTime} Wiederholungen` : `${exercise.repsOrTime} Sekunden`}
+                </p>
+              </div>
+              
+              {exercise.type === 'time' ? (
+                <div className="text-center">
+                  <div className="text-6xl font-mono mb-8">
+                    {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                  </div>
+                  <button
+                    onClick={() => setIsTimerRunning(!isTimerRunning)}
+                    className="bg-blue-600 p-6 rounded-full"
+                  >
+                    {isTimerRunning ? <Pause size={32} /> : <Play size={32} />}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleSetComplete}
+                  className="bg-green-600 p-6 rounded-full"
+                >
+                  <Check size={32} />
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    );
+  };
+  
+  // Session Execution View
+  const SessionExecution = ({ session, onComplete }) => {
+    const [exerciseOrder, setExerciseOrder] = useState(session.exercises);
+    const [currentExerciseIndex, setCurrentExerciseIndex] = useState(null);
+    const [completedExercises, setCompletedExercises] = useState([]);
+    const [showExerciseSelector, setShowExerciseSelector] = useState(false);
+    const [replacingIndex, setReplacingIndex] = useState(null);
+    
+    const handleExerciseComplete = (difficulty) => {
+      const exerciseId = exerciseOrder[currentExerciseIndex];
+      setCompletedExercises([...completedExercises, { exerciseId, difficulty }]);
+      setCurrentExerciseIndex(null);
+    };
+    
+    const handleReplaceExercise = (newExerciseId) => {
+      const newOrder = [...exerciseOrder];
+      newOrder[replacingIndex] = newExerciseId;
+      setExerciseOrder(newOrder);
+      setShowExerciseSelector(false);
+      setReplacingIndex(null);
+    };
+    
+    const handleAddStretchExercise = () => {
+      const stretchExercise = {
+        id: 'stretch-' + generateId(),
+        name: 'Dehnübung',
+        type: 'time',
+        sets: 2,
+        repsOrTime: 30,
+        restTime: 5
+      };
+      setExercises([...exercises, stretchExercise]);
+      setExerciseOrder([...exerciseOrder, stretchExercise.id]);
+    };
+    
+    const moveExercise = (fromIndex, toIndex) => {
+      const newOrder = [...exerciseOrder];
+      const [moved] = newOrder.splice(fromIndex, 1);
+      newOrder.splice(toIndex, 0, moved);
+      setExerciseOrder(newOrder);
+    };
+    
+    if (currentExerciseIndex !== null) {
+      const exercise = exercises.find(e => e.id === exerciseOrder[currentExerciseIndex]);
+      return (
+        <ExerciseExecution
+          exercise={exercise}
+          onComplete={handleExerciseComplete}
+          onBack={() => setCurrentExerciseIndex(null)}
+        />
+      );
+    }
+    
+    if (showExerciseSelector) {
+      return (
+        <div className="h-full flex flex-col">
+          <div className="flex items-center gap-4 p-4 bg-gray-800">
+            <button onClick={() => setShowExerciseSelector(false)} className="text-gray-400">
+              <ArrowLeft size={24} />
+            </button>
+            <h2 className="text-xl font-bold">Übung auswählen</h2>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-4 space-y-2">
+            {exercises.map(exercise => (
+              <button
+                key={exercise.id}
+                onClick={() => handleReplaceExercise(exercise.id)}
+                className="w-full p-4 bg-gray-800 rounded-lg text-left"
+              >
+                <h3 className="font-medium">{exercise.name}</h3>
+                <p className="text-sm text-gray-400">
+                  {exercise.sets} × {exercise.repsOrTime} {exercise.type === 'reps' ? 'Wdh' : 'Sek'}
+                </p>
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="h-full flex flex-col">
+        <div className="flex items-center gap-4 p-4 bg-gray-800">
+          <h2 className="text-xl font-bold">{session.name}</h2>
+          <span className="text-sm text-gray-400">{session.trainingType}</span>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          {exerciseOrder.map((exerciseId, index) => {
+            const exercise = exercises.find(e => e.id === exerciseId);
+            const isCompleted = completedExercises.some(c => c.exerciseId === exerciseId);
             
-            renderAddExercise() {
-                return `
-                    <div class="container">
-                        <div class="flex items-center mb-6">
-                            <button onclick="app.setState({currentView: 'exercises'})" class="mr-4 text-gray-400">
-                                <span class="icon-back"></span>
-                            </button>
-                            <h1 class="text-2xl font-bold">Übung hinzufügen</h1>
-                        </div>
-
-                        <div class="space-y-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-3">Name</label>
-                                <input type="text" value="${this.state.exerciseForm.name}" 
-                                    oninput="app.updateForm('exerciseForm', 'name', this.value)"
-                                    class="input" placeholder="z.B. Klimmzüge">
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-3">Typ</label>
-                                <div class="grid-2">
-                                    <button onclick="app.updateForm('exerciseForm', 'type', 'reps')" 
-                                        class="btn ${this.state.exerciseForm.type === 'reps' ? 'btn-primary' : 'btn-secondary'}">
-                                        Wiederholungen
-                                    </button>
-                                    <button onclick="app.updateForm('exerciseForm', 'type', 'time')" 
-                                        class="btn ${this.state.exerciseForm.type === 'time' ? 'btn-primary' : 'btn-secondary'}">
-                                        Zeit
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="grid-2">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-300 mb-3">Sätze</label>
-                                    <input type="number" value="${this.state.exerciseForm.sets}" 
-                                        oninput="app.updateForm('exerciseForm', 'sets', parseInt(this.value))"
-                                        class="input">
-                                </div>
-                                
-                                ${this.state.exerciseForm.type === 'reps' ? `
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-300 mb-3">Wiederholungen</label>
-                                        <input type="number" value="${this.state.exerciseForm.reps}" 
-                                            oninput="app.updateForm('exerciseForm', 'reps', parseInt(this.value))"
-                                            class="input">
-                                    </div>
-                                ` : `
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-300 mb-3">Dauer (Sek.)</label>
-                                        <input type="number" value="${this.state.exerciseForm.duration}" 
-                                            oninput="app.updateForm('exerciseForm', 'duration', parseInt(this.value))"
-                                            class="input">
-                                    </div>
-                                `}
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-300 mb-3">Pausenzeit (Sek.)</label>
-                                <input type="number" value="${this.state.exerciseForm.restTime}" 
-                                    oninput="app.updateForm('exerciseForm', 'restTime', parseInt(this.value))"
-                                    class="input">
-                            </div>
-
-                            <button onclick="app.addExercise()" class="btn btn-primary btn-large w-full">
-                                Übung hinzufügen
-                            </button>
-                        </div>
+            return (
+              <div
+                key={index}
+                className={`bg-gray-800 p-4 rounded-lg ${isCompleted ? 'opacity-50' : ''}`}
+              >
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => index > 0 && moveExercise(index, index - 1)}
+                    className="text-gray-500"
+                    disabled={index === 0}
+                  >
+                    ↑
+                  </button>
+                  <button
+                    onClick={() => index < exerciseOrder.length - 1 && moveExercise(index, index + 1)}
+                    className="text-gray-500"
+                    disabled={index === exerciseOrder.length - 1}
+                  >
+                    ↓
+                  </button>
+                  
+                  <div className="flex-1">
+                    <h3 className="font-medium">{exercise?.name || 'Unbekannte Übung'}</h3>
+                    <p className="text-sm text-gray-400">
+                      {exercise?.sets} × {exercise?.repsOrTime} {exercise?.type === 'reps' ? 'Wdh' : 'Sek'}
+                    </p>
+                  </div>
+                  
+                  <button
+                    onClick={() => {
+                      setReplacingIndex(index);
+                      setShowExerciseSelector(true);
+                    }}
+                    className="text-blue-400"
+                  >
+                    <RefreshCw size={20} />
+                  </button>
+                  
+                  {!isCompleted && (
+                    <button
+                      onClick={() => setCurrentExerciseIndex(index)}
+                      className="bg-blue-600 p-2 rounded"
+                    >
+                      <Play size={20} />
+                    </button>
+                  )}
+                  
+                  {isCompleted && <Check className="text-green-500" size={20} />}
+                </div>
+              </div>
+            );
+          })}
+          
+          <button
+            onClick={handleAddStretchExercise}
+            className="w-full p-4 bg-gray-700 rounded-lg text-center"
+          >
+            <Plus size={20} className="inline mr-2" />
+            Dehnübung hinzufügen
+          </button>
+        </div>
+        
+        <div className="p-4">
+          <button
+            onClick={() => {
+              const history = {
+                id: generateId(),
+                sessionId: session.id,
+                date: new Date().toISOString(),
+                exercises: completedExercises
+              };
+              setSessionHistory([...sessionHistory, history]);
+              onComplete();
+            }}
+            className="w-full bg-green-600 p-4 rounded-lg font-medium"
+            disabled={completedExercises.length === 0}
+          >
+            Training beenden
+          </button>
+        </div>
+      </div>
+    );
+  };
+  
+  // Home View
+  const HomeView = () => {
+    const [selectedSessionIndex, setSelectedSessionIndex] = useState(0);
+    
+    const getNextSessionIndex = () => {
+      if (trainingPlan.length === 0) return -1;
+      
+      // Find the last completed session
+      const lastCompleted = sessionHistory
+        .filter(h => trainingPlan.includes(h.sessionId))
+        .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+      
+      if (!lastCompleted) return 0;
+      
+      const lastIndex = trainingPlan.indexOf(lastCompleted.sessionId);
+      return (lastIndex + 1) % trainingPlan.length;
+    };
+    
+    const nextIndex = getNextSessionIndex();
+    
+    const moveSession = (fromIndex, toIndex) => {
+      const newPlan = [...trainingPlan];
+      const [moved] = newPlan.splice(fromIndex, 1);
+      newPlan.splice(toIndex, 0, moved);
+      setTrainingPlan(newPlan);
+    };
+    
+    if (activeSession) {
+      return (
+        <SessionExecution
+          session={activeSession}
+          onComplete={() => {
+            setActiveSession(null);
+            setCurrentView('home');
+          }}
+        />
+      );
+    }
+    
+    return (
+      <div className="pb-20">
+        <h1 className="text-3xl font-bold mb-6">Training Tracker</h1>
+        
+        {trainingPlan.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-400 mb-4">Noch kein Trainingsplan erstellt</p>
+            <button
+              onClick={() => setCurrentView('plan')}
+              className="bg-blue-600 px-6 py-3 rounded-lg"
+            >
+              Plan erstellen
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {trainingPlan.map((sessionId, index) => {
+              const session = sessions.find(s => s.id === sessionId);
+              if (!session) return null;
+              
+              const isNext = index === nextIndex;
+              
+              return (
+                <div
+                  key={index}
+                  className={`bg-gray-800 p-4 rounded-lg ${isNext ? 'ring-2 ring-blue-500' : ''}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => index > 0 && moveSession(index, index - 1)}
+                      className="text-gray-500"
+                      disabled={index === 0}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      onClick={() => index < trainingPlan.length - 1 && moveSession(index, index + 1)}
+                      className="text-gray-500"
+                      disabled={index === trainingPlan.length - 1}
+                    >
+                      ↓
+                    </button>
+                    
+                    <div className="flex-1">
+                      <h3 className="font-medium">{session.name}</h3>
+                      <p className="text-sm text-gray-400">
+                        {session.trainingType} • {session.exercises.length} Übungen
+                        {isNext && <span className="text-blue-400 ml-2">← Als nächstes</span>}
+                      </p>
                     </div>
-                `;
-            }
-            
-            renderWorkouts() {
-                return `
-                    <div class="container">
-                        <div class="flex justify-between items-center mb-6">
-                            <h1 class="text-2xl font-bold">Trainings</h1>
-                            <button onclick="app.setState({currentView: 'add-workout'})" class="btn-round btn-primary">
-                                <span class="icon-plus"></span>
-                            </button>
-                        </div>
+                    
+                    <button
+                      onClick={() => setActiveSession(session)}
+                      className="bg-blue-600 px-4 py-2 rounded-lg"
+                    >
+                      Start
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        
+        <div className="mt-8">
+          <h2 className="text-xl font-bold mb-4">Letzte Trainings</h2>
+          {sessionHistory.slice(-5).reverse().map(history => {
+            const session = sessions.find(s => s.id === history.sessionId);
+            return (
+              <div key={history.id} className="bg-gray-800 p-3 rounded mb-2">
+                <p className="font-medium">{session?.name || 'Unbekannte Einheit'}</p>
+                <p className="text-sm text-gray-400">
+                  {new Date(history.date).toLocaleDateString('de-DE')}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+  
+  // Main render
+  return (
+    <div className="min-h-screen bg-gray-900 text-white">
+      <div className="max-w-lg mx-auto p-4">
+        {currentView === 'home' && <HomeView />}
+        {currentView === 'exercises' && <ExercisesView />}
+        {currentView === 'sessions' && <SessionsView />}
+        {currentView === 'plan' && <TrainingPlanView />}
+        {currentView === 'settings' && <SettingsView />}
+      </div>
+      {!activeSession && <Navigation />}
+    </div>
+  );
+};
 
-                        <div class="space-y-4">
-                            ${this.state.workouts.map(workout => `
-                                <div class="card">
-                                    <div class="flex justify-between items-start">
-                                        <div class="flex-1">
-                                            <h3 class="font-bold text-lg">${workout.name}</h3>
-                                            <p class="text-orange-400 font-medium">${workout.type}</p>
-                                            <p class="text-sm text-gray-400 mt-1">${workout.exercises.length} Übungen</p>
-                                        </div>
-                                        <button onclick="app.startWorkout(${JSON.stringify(workout).replace(/"/g, '&quot;')})" 
-                                            class="btn btn-primary">
-                                            <span class="icon-play mr-2"></span>Start
-                                        </button>
-                                    </div>
-                                </div>
-                            `).join('') || `
-                                <div class="text-center py-12">
-                                    <p class="text-gray-400 mb-4">Noch keine Trainings erstellt</p>
-                                    <button onclick="app.setState({currentView: 'add-workout'})" class="btn btn-primary">
-                                        Erstes Training hinzufügen
-                                    </button>
-                                </div>
-                            `}
-                        </div>
-                    </div>
-                `;
-            }
-            
-            renderPlans() {
-                return `
-                    <div class="container">
-                        <div class="flex justify-between items-center mb-6">
-                            <h1 class="text-2xl font-bold">Trainingspläne</h1>
-                            <button onclick="app.setState({currentView: 'add-plan'})" class="btn-round btn-primary">
-                                <span class="icon-plus"></span>
-                            </button>
-                        </div>
-
-                        <div class="space-y-4">
-                            ${this.state.trainingPlans.map(plan => `
-                                <div class="card">
-                                    <div class="flex justify-between items-start">
-                                        <div class="flex-1">
-                                            <h3 class="font-bold text-lg">${plan.name}</h3>
-                                            <p class="text-gray-400">${plan.workouts.length} Trainingseinheiten</p>
-                                            <p class="text-sm text-orange-400 mt-1">
-                                                Nächstes: ${plan.workouts[plan.currentWorkoutIndex]?.name || 'Plan abgeschlossen'}
-                                            </p>
-                                        </div>
-                                        <button onclick="app.setState({currentPlan: ${JSON.stringify(plan).replace(/"/g, '&quot;')}, currentView: 'plan-overview'})" 
-                                            class="btn btn-primary">
-                                            <span class="icon-play mr-2"></span>Start
-                                        </button>
-                                    </div>
-                                </div>
-                            `).join('') || `
-                                <div class="text-center py-12">
-                                    <p class="text-gray-400 mb-4">Noch keine Trainingspläne erstellt</p>
-                                    <button onclick="app.setState({currentView: 'add-plan'})" class="btn btn-primary">
-                                        Ersten Plan erstellen
-                                    </button>
-                                </div>
-                            `}
-                        </div>
-                    </div>
-                `;
-            }
+export default App;
