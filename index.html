@@ -132,8 +132,8 @@
         
         // Default training types
         const DEFAULT_TRAINING_TYPES = ['Strength', 'Power', 'Projecting', 'Power Endurance', 'Endurance'];
-    
-        // Main App
+
+    // Main App
         const App = () => {
             const [exercises, setExercises] = useState([]);
             const [sessions, setSessions] = useState([]);
@@ -499,7 +499,8 @@
             const SessionsView = () => {
                 const [showForm, setShowForm] = useState(false);
                 const [editingSession, setEditingSession] = useState(null);
-   const handleSave = (session) => {
+
+const handleSave = (session) => {
                     if (editingSession) {
                         setSessions(sessions.map(s => s.id === session.id ? session : s));
                     } else {
@@ -1179,8 +1180,7 @@
                                 <button onClick={() => setCurrentView('plan')} className="bg-blue-600 px-6 py-3 rounded-lg">
                                     Plan erstellen
                                 </button>
-                            </div
-                              ) : (
+                            </div) : (
                             <div className="space-y-2">
                                 {trainingPlan.map((sessionId, index) => {
                                     const session = sessions.find(s => s.id === sessionId);
