@@ -133,7 +133,8 @@
         // Default training types
         const DEFAULT_TRAINING_TYPES = ['Strength', 'Power', 'Projecting', 'Power Endurance', 'Endurance'];
 
-        // Main App
+        // HIER ENDET TEIL 1 - TEIL 2 KOMMT GLEICH
+        // Main App - FÜGE DIES DIREKT NACH "// HIER ENDET TEIL 1" EIN
         const App = () => {
             const [exercises, setExercises] = useState([]);
             const [sessions, setSessions] = useState([]);
@@ -1180,7 +1181,8 @@
                                 <button onClick={() => setCurrentView('plan')} className="bg-blue-600 px-6 py-3 rounded-lg">
                                     Plan erstellen
                                 </button>
-                            </div) : (
+                            </div>
+                                                    ) : (
                             <div className="space-y-2">
                                 {trainingPlan.map((sessionId, index) => {
                                     const session = sessions.find(s => s.id === sessionId);
@@ -1258,3 +1260,7 @@
         
         // Render the app
         ReactDOM.render(<App />, document.getElementById('root'));
+
+    </script>
+</body>
+</html>
