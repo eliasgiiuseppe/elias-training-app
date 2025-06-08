@@ -754,7 +754,7 @@
                         setCurrentSide('right');
                         if (exercise.type === 'time') {
                             setTimeLeft(exercise.repsOrTime);
-                            setAutoStartNext(false);
+                            setAutoStartNext(true); // Auto-start für rechte Seite
                         }
                     } else {
                         if (currentSet < exercise.sets) {
@@ -773,6 +773,7 @@
                     if (exercise.type === 'time') {
                         setTimeLeft(exercise.repsOrTime);
                         setIsTimerRunning(false);
+                        setAutoStartNext(true); // Auto-start nach der Pause
                     }
                     setAutoStartNext(false);
                 };
@@ -885,14 +886,11 @@
                                     </div>
                                     
                                     {exercise.type === 'time' ? (
-                                        <div className="text-center">
-                                            <div className="text-6xl font-mono mb-8 timer-display">
-                                                {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-                                            </div>
-                                            <button onClick={() => setIsTimerRunning(!isTimerRunning)} className="bg-orange-500 p-6 rounded-full">
-                                                {isTimerRunning ? <Pause size={32} /> : <Play size={32} />}
-                                            </button>
-                                        </div>
+                                        <Timer 
+                                            duration={exercise.repsOrTime} 
+                                            onComplete={handleSetComplete}
+                                            autoStart={autoStartNext}
+                                        />
                                     ) : (
                                         <button onClick={handleSetComplete} className="bg-green-500 p-6 rounded-full">
                                             <Check size={32} />
@@ -943,20 +941,6 @@
                         setExerciseOrder([...exerciseOrder, ...exerciseIds]);
                     }
                     setShowExerciseSelector(false);
-                };
-                
-                const handleAddStretchExercise = () => {
-                    const stretchExercise = {
-                        id: 'stretch-' + generateId(),
-                        name: 'Dehnübung',
-                        type: 'time',
-                        sets: 2,
-                        repsOrTime: 30,
-                        restTime: 5,
-                        isUnilateral: false
-                    };
-                    setExercises([...exercises, stretchExercise]);
-                    setExerciseOrder([...exerciseOrder, stretchExercise.id]);
                 };
                 
                 const moveExercise = (fromIndex, toIndex) => {
@@ -1072,11 +1056,6 @@
                                 className="w-full p-4 bg-gray-100 rounded-lg text-center flex items-center justify-center gap-2">
                                 <Plus />
                                 <span>Übung hinzufügen</span>
-                            </button>
-                            
-                            <button onClick={handleAddStretchExercise}
-                                className="w-full p-4 bg-gray-100 rounded-lg text-center">
-                                <Plus /> Dehnübung hinzufügen
                             </button>
                         </div>
                         
