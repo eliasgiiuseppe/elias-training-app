@@ -730,32 +730,12 @@
                 const [currentSide, setCurrentSide] = useState(exercise.isUnilateral ? 'left' : null);
                 const [isResting, setIsResting] = useState(false);
                 const [difficulty, setDifficulty] = useState(null);
-                const [timeLeft, setTimeLeft] = useState(exercise.type === 'time' ? exercise.repsOrTime : 0);
-                const [isTimerRunning, setIsTimerRunning] = useState(false);
                 const [autoStartNext, setAutoStartNext] = useState(false);
-                
-                useEffect(() => {
-                    let interval;
-                    if (isTimerRunning && timeLeft > 0) {
-                        interval = setInterval(() => {
-                            setTimeLeft(t => t - 1);
-                        }, 1000);
-                    } else if (timeLeft === 0 && isTimerRunning) {
-                        setIsTimerRunning(false);
-                        if (exercise.type === 'time') {
-                            handleSetComplete();
-                        }
-                    }
-                    return () => clearInterval(interval);
-                }, [isTimerRunning, timeLeft]);
                 
                 const handleSetComplete = () => {
                     if (exercise.isUnilateral && currentSide === 'left') {
                         setCurrentSide('right');
-                        if (exercise.type === 'time') {
-                            setTimeLeft(exercise.repsOrTime);
-                            setAutoStartNext(true); // Auto-start für rechte Seite
-                        }
+                        setAutoStartNext(true); // Auto-start für rechte Seite
                     } else {
                         if (currentSet < exercise.sets) {
                             setIsResting(true);
@@ -770,12 +750,7 @@
                     setIsResting(false);
                     setCurrentSet(currentSet + 1);
                     setCurrentSide(exercise.isUnilateral ? 'left' : null);
-                    if (exercise.type === 'time') {
-                        setTimeLeft(exercise.repsOrTime);
-                        setIsTimerRunning(false);
-                        setAutoStartNext(true); // Auto-start nach der Pause
-                    }
-                    setAutoStartNext(false);
+                    setAutoStartNext(true); // Auto-start nach der Pause
                 };
                 
                 const handleDifficultySelect = (level) => {
@@ -788,18 +763,12 @@
                         handleRestComplete();
                     } else if (exercise.isUnilateral && currentSide === 'left') {
                         setCurrentSide('right');
-                        if (exercise.type === 'time') {
-                            setTimeLeft(exercise.repsOrTime);
-                            setIsTimerRunning(false);
-                        }
+                        setAutoStartNext(false);
                     } else if (currentSet < exercise.sets) {
                         setCurrentSet(currentSet + 1);
                         setCurrentSide(exercise.isUnilateral ? 'left' : null);
                         setIsResting(false);
-                        if (exercise.type === 'time') {
-                            setTimeLeft(exercise.repsOrTime);
-                            setIsTimerRunning(false);
-                        }
+                        setAutoStartNext(false);
                     }
                 };
                 
@@ -808,24 +777,15 @@
                         setIsResting(false);
                         setCurrentSet(currentSet - 1);
                         setCurrentSide(exercise.isUnilateral ? 'right' : null);
-                        if (exercise.type === 'time') {
-                            setTimeLeft(exercise.repsOrTime);
-                            setIsTimerRunning(false);
-                        }
+                        setAutoStartNext(false);
                     } else if (exercise.isUnilateral && currentSide === 'right') {
                         setCurrentSide('left');
-                        if (exercise.type === 'time') {
-                            setTimeLeft(exercise.repsOrTime);
-                            setIsTimerRunning(false);
-                        }
+                        setAutoStartNext(false);
                     } else if (currentSet > 1) {
                         setCurrentSet(currentSet - 1);
                         setCurrentSide(exercise.isUnilateral ? 'right' : null);
                         setIsResting(true);
-                        if (exercise.type === 'time') {
-                            setTimeLeft(exercise.repsOrTime);
-                            setIsTimerRunning(false);
-                        }
+                        setAutoStartNext(false);
                     }
                 };
                 
