@@ -1,5 +1,4 @@
-# elias-training-app
-# 🧗‍♂️ Climbing Training Tracker
+# 🧗‍♂️ Elias' Training App
 
 Eine Progressive Web App für dein Kletter-Training!
 
@@ -8,12 +7,10 @@ Eine Progressive Web App für dein Kletter-Training!
 - 📱 Funktioniert wie eine native App
 - 💾 Speichert alle Daten lokal
 - ⏱️ Timer für Übungen und Pausen
-- 📊 Trainingsfortschritt-Tracking
-- 🔄 Flexible Trainingsgestaltung
 
 ## 📲 Installation
 
-1. Öffne die App: https://DEINUSERNAME.github.io/climbing-trainer
+1. Öffne die App: https://eliasgiiuseppe.github.io/elias-training-app
 2. iOS: Teilen → Zum Home-Bildschirm
 3. Android: Menü → App installieren
 
